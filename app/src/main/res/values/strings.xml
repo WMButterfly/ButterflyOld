@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">WindowMirror</string>
+
+    <string name="record_start">Start Recording</string>
+    <string name="record_stop">Stop Recording</string>
+
 </resources>
