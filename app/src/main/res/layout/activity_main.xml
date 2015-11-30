@@ -6,9 +6,21 @@
               android:gravity="center"
         >
 
-    <TextView android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Hello, WindowMirror!"
+    <!--Record Fragment Container-->
+    <fragment
+            android:name="com.windowmirror.android.controller.fragment.AudioRecordFragment"
+            android:id="@+id/fragment_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
+
+    <!--History Fragment Container-->
+    <FrameLayout
+            android:id="@+id/fragment_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
             />
 
 </LinearLayout>
