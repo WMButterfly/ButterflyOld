@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
+import com.windowmirror.android.listener.EntryActionListener;
+import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.util.FileUtility;
 
 import java.io.IOException;
@@ -38,6 +40,7 @@ public class AudioRecordFragment extends Fragment {
 
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
     private String audioFilePath;
+    private long startTime;
 
     @Nullable
     @Override
@@ -102,6 +105,7 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mediaRecorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
         mediaRecorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
+        startTime = System.currentTimeMillis();
 
         try {
             mediaRecorder.prepare();
@@ -120,8 +124,20 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder.stop();
         mediaRecorder.release();
         mediaRecorder = null;
+        createEntry();
         Log.d(TAG, "Recording created to file: " + audioFilePath);
         Toast.makeText(getActivity(), audioFilePath, Toast.LENGTH_SHORT).show(); // TODO REMOVE ME
+    }
+
+    private void createEntry() {
+        final Entry entry = new Entry();
+        final long now = System.currentTimeMillis();
+        entry.setTimestamp(now);
+        entry.setDuration(now - startTime);
+        entry.setAudioFilePath(audioFilePath);
+        if (getActivity() instanceof EntryActionListener) {
+            ((EntryActionListener) getActivity()).onEntryCreated(entry);
+        }
     }
 
     @Override
