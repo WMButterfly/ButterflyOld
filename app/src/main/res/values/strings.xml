@@ -4,4 +4,8 @@
     <string name="record_start">Start Recording</string>
     <string name="record_stop">Stop Recording</string>
 
+    <string name="now">Just Now</string>
+    <string name="history">History</string>
+    <string name="transcription_pending">Transcription Pending</string>
+
 </resources>
