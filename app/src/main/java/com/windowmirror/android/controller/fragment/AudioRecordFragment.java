@@ -126,7 +126,6 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder = null;
         createEntry();
         Log.d(TAG, "Recording created to file: " + audioFilePath);
-        Toast.makeText(getActivity(), audioFilePath, Toast.LENGTH_SHORT).show(); // TODO REMOVE ME
     }
 
     private void createEntry() {

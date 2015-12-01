@@ -10,6 +10,8 @@ import android.widget.TextView;
 import com.windowmirror.android.R;
 import com.windowmirror.android.model.Entry;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author alliecurry
  */
@@ -48,7 +50,6 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
             viewHolder.transcription.setText(R.string.transcription_pending);
         } else {
             viewHolder.transcription.setText(transcriptionStr);
-
             final View.OnClickListener onClick = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -67,12 +68,14 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
         final boolean isPlaying = listener.isEntryPlaying(entry);
         final int drawableTop = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
         viewHolder.play.setCompoundDrawablesWithIntrinsicBounds(0, drawableTop, 0, 0);
+        viewHolder.play.setText(formatDuration(entry.getDuration()));
         viewHolder.play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 listener.onPausePlay(entry);
             }
         });
+
         return row;
     }
 
@@ -87,6 +90,26 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
                         now,
                         DateUtils.MINUTE_IN_MILLIS,
                         DateUtils.FORMAT_ABBREV_RELATIVE);
+    }
+
+    private static String formatDuration(final long millis) {
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
+                - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis));
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
+                - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis));
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+
+        StringBuilder b = new StringBuilder();
+        if (hours > 0) {
+            b.append(String.valueOf(hours));
+            b.append(":");
+        }
+        b.append(minutes == 0 ? "00" : minutes < 10 ? String.valueOf("0" + minutes) :
+                String.valueOf(minutes));
+        b.append(":");
+        b.append(seconds == 0 ? "00" : seconds < 10 ? String.valueOf("0" + seconds) :
+                String.valueOf(seconds));
+        return b.toString();
     }
 
     private static ViewHolder initViewHolder(final View row) {
