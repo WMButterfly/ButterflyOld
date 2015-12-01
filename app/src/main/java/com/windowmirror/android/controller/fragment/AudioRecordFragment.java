@@ -2,6 +2,7 @@ package com.windowmirror.android.controller.fragment;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
+import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
 
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.io.IOException;
  * Use of this fragment requires the following two permissions:
  * android.permission.RECORD_AUDIO
  * android.permission.WRITE_EXTERNAL_STORAGE
+ *
  * @author alliecurry
  */
 public class AudioRecordFragment extends Fragment {
@@ -42,7 +45,7 @@ public class AudioRecordFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View layout  = inflater.inflate(R.layout.fragment_record, container, false);
+        final View layout = inflater.inflate(R.layout.fragment_record, container, false);
         final boolean isAccepted = checkPermissions();
         if (isAccepted) {
             // Ensure necessary directories are created
@@ -58,20 +61,23 @@ public class AudioRecordFragment extends Fragment {
             }
         });
 
+
         return layout;
     }
 
-    /** @return true if necessary permissions are already granted. */
+    /**
+     * @return true if necessary permissions are already granted.
+     */
     @TargetApi(23)
     private boolean checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && getActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] {
-                            Manifest.permission.RECORD_AUDIO,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    },
-                    PERMISSION_REQUEST_CODE);
+            && getActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                PERMISSION_REQUEST_CODE);
             return false;
         }
         return true;
@@ -94,7 +100,7 @@ public class AudioRecordFragment extends Fragment {
         recordButton.setText(R.string.record_start);
     }
 
-    private synchronized void startRecording(final String fileName)  {
+    private synchronized void startRecording(final String fileName) {
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -121,6 +127,11 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder.release();
         mediaRecorder = null;
         Log.d(TAG, "Recording created to file: " + audioFilePath);
+
+        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
+        oxfordIntent.putExtra("filename", audioFilePath);
+        getActivity().startService(oxfordIntent);
+
         Toast.makeText(getActivity(), audioFilePath, Toast.LENGTH_SHORT).show(); // TODO REMOVE ME
     }
 
@@ -134,8 +145,8 @@ public class AudioRecordFragment extends Fragment {
                 } else {
                     Log.d(TAG, "Permission Failed");
                     Toast.makeText(getActivity(),
-                            "You must accept the record permission to use this app",
-                            Toast.LENGTH_SHORT).show();
+                        "You must accept the record permission to use this app",
+                        Toast.LENGTH_SHORT).show();
                 }
                 break;
         }

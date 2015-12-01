@@ -17,6 +17,11 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".service.ProjectOxfordService"
+                 >
+
+        </service>
+
     </application>
 
 </manifest>
