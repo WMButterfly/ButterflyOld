@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class HistoryAdapter extends ArrayAdapter<Entry> {
     private static final int TEXT_MAX_LINES = 2;
-    private static final String DATE_FORMAT = "";
     private Listener listener;
 
     public HistoryAdapter(final Context context, final Listener listener) {
