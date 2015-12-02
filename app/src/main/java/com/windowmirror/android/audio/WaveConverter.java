@@ -25,6 +25,7 @@ public final class WaveConverter {
         DataOutputStream output = null;
         try {
             output = new DataOutputStream(new FileOutputStream(waveFile));
+
             // WAVE header
             // see http://ccrma.stanford.edu/courses/422/projects/WaveFormat/
             writeString(output, "RIFF"); // chunk id
@@ -56,15 +57,15 @@ public final class WaveConverter {
     }
 
     private static void writeInt(final DataOutputStream output, final int value) throws IOException {
-        output.write(value);
-        output.write(value >> 8);
-        output.write(value >> 16);
-        output.write(value >> 24);
+        output.write(value & 0xFF);
+        output.write((value >> 8) & 0xFF);
+        output.write((value >> 16) & 0xFF);
+        output.write((value >> 24) & 0xFF);
     }
 
     private static void writeShort(final DataOutputStream output, final short value) throws IOException {
-        output.write(value);
-        output.write(value >> 8);
+        output.write(value & 0xFF);
+        output.write((value >> 8) & 0xFF);
     }
 
     private static void writeString(final DataOutputStream output, final String value) throws IOException {
