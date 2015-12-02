@@ -3,7 +3,7 @@ package com.windowmirror.android.audio;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import com.windowmirror.android.util.FileUtility;
+import android.os.Environment;
 
 import java.io.*;
 
@@ -12,6 +12,7 @@ import java.io.*;
  */
 public class AudioRecorderV2 {
     private static final int RECORDER_BPP = 16;//bit depth per sample
+    private static final String OUTPUT_FOLDER = "WindowMirror";
     private static final String TEMP_FILE = "temp.raw";
     private static final int SAMPLE_RATE = 8000;
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
@@ -29,18 +30,17 @@ public class AudioRecorderV2 {
     }
 
     public String getTempFileName(){
-        String filepath = FileUtility.getDirectoryPath();
-        File file = new File(filepath);
+        String filepath = Environment.getExternalStorageDirectory().getPath();
+        File file = new File(filepath,OUTPUT_FOLDER);
 
         if(!file.exists()){
             file.mkdirs();
         }
 
-        File tempFile = new File(filepath, TEMP_FILE);
+        File tempFile = new File(filepath,TEMP_FILE);
 
-        if(tempFile.exists()) {
+        if(tempFile.exists())
             tempFile.delete();
-        }
 
         return (file.getAbsolutePath() + "/" + TEMP_FILE);
     }
