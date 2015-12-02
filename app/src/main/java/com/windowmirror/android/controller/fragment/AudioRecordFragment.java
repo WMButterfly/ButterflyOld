@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecordThread;
-import com.windowmirror.android.audio.AudioTest;
 import com.windowmirror.android.audio.AudioRecorderV2;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
