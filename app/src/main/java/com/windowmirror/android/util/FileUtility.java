@@ -36,6 +36,6 @@ public final class FileUtility {
     public static String generateAudioFileName() {
         // TODO Review and change if necessary. Could use system millis but is hard to find browse manually.
         final String uniqueName = new SimpleDateFormat("yy-MM-dd-k-m-s", Locale.US).format(new Date());
-        return "audio-" + uniqueName + ".wav";
+        return "audio-" + uniqueName;
     }
 }

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,12 +17,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
-import com.windowmirror.android.service.ProjectOxfordService;
+import com.windowmirror.android.audio.AudioRecordThread;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
-
-import java.io.IOException;
 
 /**
  * A Fragment used to record and save audio.
@@ -45,6 +43,8 @@ public class AudioRecordFragment extends Fragment {
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
     private String audioFilePath;
     private long startTime;
+
+    private AudioRecordThread audioRecordThread;
 
     @Nullable
     @Override
@@ -105,40 +105,18 @@ public class AudioRecordFragment extends Fragment {
     }
 
     private synchronized void startRecording(final String fileName) {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(fileName);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mediaRecorder.setAudioEncoder(AudioFormat.ENCODING_PCM_16BIT);
-        mediaRecorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
-        mediaRecorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
+        audioRecordThread = new AudioRecordThread(fileName);
         startTime = System.currentTimeMillis();
-
-        try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
-        } catch (final IOException e) {
-            Log.e(TAG, "Could not start recording: " + e.toString());
-            onRecordFail();
-        }
+        audioRecordThread.start();
     }
 
     private synchronized void stopRecording() {
-        if (mediaRecorder == null) {
-            Log.w(TAG, "Cannot stop recording: No MediaRecorder found.");
-            return;
-        }
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
+        audioRecordThread.stopRecording();
         createEntry();
         Log.d(TAG, "Recording created to file: " + audioFilePath);
         Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-        oxfordIntent.putExtra("filename", audioFilePath);
+        oxfordIntent.putExtra("filename", audioFilePath + ".wav");
         getActivity().startService(oxfordIntent);
-
-        Toast.makeText(getActivity(), audioFilePath, Toast.LENGTH_SHORT).show(); // TODO REMOVE ME
     }
 
     private void createEntry() {
@@ -146,7 +124,7 @@ public class AudioRecordFragment extends Fragment {
         final long now = System.currentTimeMillis();
         entry.setTimestamp(now);
         entry.setDuration(now - startTime);
-        entry.setAudioFilePath(audioFilePath);
+        entry.setAudioFilePath(audioFilePath + ".wav");
         if (getActivity() instanceof EntryActionListener) {
             ((EntryActionListener) getActivity()).onEntryCreated(entry);
         }
