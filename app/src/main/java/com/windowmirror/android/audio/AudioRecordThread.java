@@ -22,8 +22,11 @@ public class AudioRecordThread extends Thread {
     final String filePath;
     private boolean stop;
 
-    public AudioRecordThread(final String filePath) {
+    private OnCompleteListener listener;
+
+    public AudioRecordThread(final String filePath, final OnCompleteListener listener) {
         this.filePath = filePath;
+        this.listener = listener;
     }
 
     @Override
@@ -84,10 +87,17 @@ public class AudioRecordThread extends Thread {
         } catch (final Exception e) {
             Log.e(TAG, "Error converting to wav", e);
         }
+
+        if (listener != null) {
+            listener.onComplete(filePath);
+        }
     }
 
     public synchronized void stopRecording() {
         stop = true;
     }
 
+    public interface OnCompleteListener {
+        void onComplete(final String filePath);
+    }
 }

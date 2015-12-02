@@ -105,7 +105,7 @@ public class AudioRecordFragment extends Fragment {
     }
 
     private synchronized void startRecording(final String fileName) {
-        audioRecordThread = new AudioRecordThread(fileName);
+        audioRecordThread = new AudioRecordThread(fileName, onRecordComplete);
         startTime = System.currentTimeMillis();
         audioRecordThread.start();
     }
@@ -114,10 +114,16 @@ public class AudioRecordFragment extends Fragment {
         audioRecordThread.stopRecording();
         createEntry();
         Log.d(TAG, "Recording created to file: " + audioFilePath);
-        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-        oxfordIntent.putExtra("filename", audioFilePath + ".wav");
-        getActivity().startService(oxfordIntent);
     }
+
+    private AudioRecordThread.OnCompleteListener onRecordComplete = new AudioRecordThread.OnCompleteListener() {
+        @Override
+        public void onComplete(String filePath) {
+            Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
+            oxfordIntent.putExtra("filename", audioFilePath + ".wav");
+            getActivity().startService(oxfordIntent);
+        }
+    };
 
     private void createEntry() {
         final Entry entry = new Entry();
