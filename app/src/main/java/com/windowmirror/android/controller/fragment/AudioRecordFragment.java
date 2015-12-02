@@ -18,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecordThread;
+import com.windowmirror.android.audio.AudioTest;
+import com.windowmirror.android.audio.AudioRecorderV2;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.service.ProjectOxfordService;
@@ -104,23 +106,31 @@ public class AudioRecordFragment extends Fragment {
         recordButton.setText(R.string.record_start);
     }
 
+    private AudioRecorderV2 audioTest;
     private synchronized void startRecording(final String fileName) {
         audioRecordThread = new AudioRecordThread(fileName, onRecordComplete);
         startTime = System.currentTimeMillis();
-        audioRecordThread.start();
+//        audioRecordThread.start();
+        audioTest = new AudioRecorderV2(fileName + ".wav");
+        audioTest.startRecording();
     }
 
     private synchronized void stopRecording() {
-        audioRecordThread.stopRecording();
-        createEntry();
-        Log.d(TAG, "Recording created to file: " + audioFilePath);
+//        audioRecordThread.stopRecording();
+        try {
+            audioTest.stopRecording(onRecordComplete);
+            createEntry();
+            Log.d(TAG, "Recording created to file: " + audioFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private AudioRecordThread.OnCompleteListener onRecordComplete = new AudioRecordThread.OnCompleteListener() {
         @Override
         public void onComplete(String filePath) {
             Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-            oxfordIntent.putExtra("filename", audioFilePath + ".wav");
+            oxfordIntent.putExtra("filename", filePath);
             getActivity().startService(oxfordIntent);
         }
     };

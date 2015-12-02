@@ -40,7 +40,7 @@ public class AudioRecordThread extends Thread {
                 AUDIO_FORMAT, BUFFER_SIZE);
         recorder.startRecording();
 
-        BufferedOutputStream os = null;
+        BufferedOutputStream os;
         try {
             os = new BufferedOutputStream(new FileOutputStream(filePath + ".raw"));
         } catch (FileNotFoundException e) {
@@ -84,6 +84,10 @@ public class AudioRecordThread extends Thread {
                     new File(filePath + ".wav"),
                     SAMPLE_RATE
             );
+
+//            WaveConverter.createWaveFile(filePath + ".raw",
+//                    filePath + ".wav",
+//                    BUFFER_SIZE, SAMPLE_RATE, 1);
         } catch (final Exception e) {
             Log.e(TAG, "Error converting to wav", e);
         }
