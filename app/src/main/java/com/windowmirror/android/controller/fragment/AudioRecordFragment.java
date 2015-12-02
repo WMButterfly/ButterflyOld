@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,8 +36,8 @@ import java.io.IOException;
 public class AudioRecordFragment extends Fragment {
     public static final String TAG = AudioRecordFragment.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 0xee;
-    private static final int AUDIO_BIT_RATE = 96000;
-    private static final int AUDIO_SAMPLE_RATE = 44100;
+    private static final int AUDIO_BIT_RATE = 256000;
+    private static final int AUDIO_SAMPLE_RATE = 16000;
     private boolean isRecording = false;
     private TextView recordButton;
     private MediaRecorder mediaRecorder = null;
@@ -109,6 +110,7 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mediaRecorder.setOutputFile(fileName);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setAudioEncoder(AudioFormat.ENCODING_PCM_16BIT);
         mediaRecorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
         mediaRecorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
         startTime = System.currentTimeMillis();

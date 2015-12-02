@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 import com.microsoft.projectoxford.speechrecognition.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -40,12 +42,10 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
 
     public void processNewFile(String filename) {
         try {
-            // Note for wave files, we can just send data from the file right to the server.
-            // In the case you are not an audio file in wave format, and instead you have just
-            // raw data (for example audio coming over bluetooth), then before sending up any
-            // audio data, you must first send up an SpeechAudioFormat descriptor to describe
-            // the layout and format of your raw audio data via DataRecognitionClient's sendAudioFormat() method.
-            InputStream fileStream = getAssets().open(filename);
+            File audioFile = new File(filename);
+//            File audioFile = new File("/storage/emulated/0/WindowMirror/whatstheweatherlike.wav");
+            InputStream fileStream = new FileInputStream(audioFile);
+//            InputStream fileStream = getAssets().open("whatstheweatherlike.wav");
             int bytesRead = 0;
             byte[] buffer = new byte[1024];
 
@@ -59,7 +59,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 }
             } while (bytesRead > 0);
         } catch (IOException ex) {
-            Contract.fail();
+            Log.e(TAG, ex.toString());
         } finally {
             client.endAudio();
         }
