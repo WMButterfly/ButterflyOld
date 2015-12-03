@@ -17,12 +17,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
-import com.windowmirror.android.service.ProjectOxfordService;
+import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
-
-import java.io.IOException;
 
 /**
  * A Fragment used to record and save audio.
@@ -32,11 +31,11 @@ import java.io.IOException;
  *
  * @author alliecurry
  */
-public class AudioRecordFragment extends Fragment {
+public class AudioRecordFragment extends Fragment implements AudioRecorder.AudioListener {
     public static final String TAG = AudioRecordFragment.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 0xee;
-    private static final int AUDIO_BIT_RATE = 96000;
-    private static final int AUDIO_SAMPLE_RATE = 44100;
+    private static final int AUDIO_BIT_RATE = 256000;
+    private static final int AUDIO_SAMPLE_RATE = 16000;
     private boolean isRecording = false;
     private TextView recordButton;
     private MediaRecorder mediaRecorder = null;
@@ -103,51 +102,45 @@ public class AudioRecordFragment extends Fragment {
         recordButton.setText(R.string.record_start);
     }
 
+    private AudioRecorder audioTest;
     private synchronized void startRecording(final String fileName) {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(fileName);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mediaRecorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
-        mediaRecorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
         startTime = System.currentTimeMillis();
-
-        try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
-        } catch (final IOException e) {
-            Log.e(TAG, "Could not start recording: " + e.toString());
-            onRecordFail();
-        }
+        audioTest = new AudioRecorder(fileName + ".wav", this);
+        audioTest.startRecording();
     }
 
     private synchronized void stopRecording() {
-        if (mediaRecorder == null) {
-            Log.w(TAG, "Cannot stop recording: No MediaRecorder found.");
-            return;
+        try {
+            audioTest.stopRecording();
+            Log.d(TAG, "Recording created to file: " + audioFilePath);
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
         }
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
-        createEntry();
-        Log.d(TAG, "Recording created to file: " + audioFilePath);
-        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-        oxfordIntent.putExtra("filename", audioFilePath);
-        getActivity().startService(oxfordIntent);
-
-        Toast.makeText(getActivity(), audioFilePath, Toast.LENGTH_SHORT).show(); // TODO REMOVE ME
     }
 
-    private void createEntry() {
+    @Override
+    public void onAudioRecordError() {
+        onRecordFail();
+    }
+
+    @Override
+    public void onAudioRecordComplete(String filePath) {
+        final Entry entry = createEntry();
+        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
+        oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
+        getActivity().startService(oxfordIntent);
+    }
+
+    private Entry createEntry() {
         final Entry entry = new Entry();
         final long now = System.currentTimeMillis();
         entry.setTimestamp(now);
         entry.setDuration(now - startTime);
-        entry.setAudioFilePath(audioFilePath);
+        entry.setAudioFilePath(audioFilePath + ".wav");
         if (getActivity() instanceof EntryActionListener) {
             ((EntryActionListener) getActivity()).onEntryCreated(entry);
         }
+        return entry;
     }
 
     @Override
