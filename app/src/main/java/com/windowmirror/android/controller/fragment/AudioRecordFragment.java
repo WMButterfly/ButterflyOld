@@ -17,8 +17,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
-import com.windowmirror.android.audio.AudioRecordThread;
-import com.windowmirror.android.audio.AudioRecorderV2;
+import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.service.ProjectOxfordService;
@@ -32,7 +31,7 @@ import com.windowmirror.android.util.FileUtility;
  *
  * @author alliecurry
  */
-public class AudioRecordFragment extends Fragment {
+public class AudioRecordFragment extends Fragment implements AudioRecorder.AudioListener {
     public static final String TAG = AudioRecordFragment.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 0xee;
     private static final int AUDIO_BIT_RATE = 256000;
@@ -44,8 +43,6 @@ public class AudioRecordFragment extends Fragment {
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
     private String audioFilePath;
     private long startTime;
-
-    private AudioRecordThread audioRecordThread;
 
     @Nullable
     @Override
@@ -105,36 +102,36 @@ public class AudioRecordFragment extends Fragment {
         recordButton.setText(R.string.record_start);
     }
 
-    private AudioRecorderV2 audioTest;
+    private AudioRecorder audioTest;
     private synchronized void startRecording(final String fileName) {
-        audioRecordThread = new AudioRecordThread(fileName, onRecordComplete);
         startTime = System.currentTimeMillis();
-//        audioRecordThread.start();
-        audioTest = new AudioRecorderV2(fileName + ".wav");
+        audioTest = new AudioRecorder(fileName + ".wav", this);
         audioTest.startRecording();
     }
 
     private synchronized void stopRecording() {
-//        audioRecordThread.stopRecording();
         try {
-            audioTest.stopRecording(onRecordComplete);
-            createEntry();
+            audioTest.stopRecording();
             Log.d(TAG, "Recording created to file: " + audioFilePath);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString());
         }
     }
 
-    private AudioRecordThread.OnCompleteListener onRecordComplete = new AudioRecordThread.OnCompleteListener() {
-        @Override
-        public void onComplete(String filePath) {
-            Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-            oxfordIntent.putExtra("filename", filePath);
-            getActivity().startService(oxfordIntent);
-        }
-    };
+    @Override
+    public void onAudioRecordError() {
+        onRecordFail();
+    }
 
-    private void createEntry() {
+    @Override
+    public void onAudioRecordComplete(String filePath) {
+        final Entry entry = createEntry();
+        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
+        oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
+        getActivity().startService(oxfordIntent);
+    }
+
+    private Entry createEntry() {
         final Entry entry = new Entry();
         final long now = System.currentTimeMillis();
         entry.setTimestamp(now);
@@ -143,6 +140,7 @@ public class AudioRecordFragment extends Fragment {
         if (getActivity() instanceof EntryActionListener) {
             ((EntryActionListener) getActivity()).onEntryCreated(entry);
         }
+        return entry;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package com.windowmirror.android.service;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
 import com.microsoft.projectoxford.speechrecognition.*;
+import com.windowmirror.android.model.Entry;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,8 +13,9 @@ import java.io.InputStream;
 
 public class ProjectOxfordService extends IntentService implements ISpeechRecognitionServerEvents {
     private static final String TAG = "ProjectOxfordService";
+    public static final String KEY_ENTRY = "entry";
 
-    DataRecognitionClient client;
+    private Entry entry;
 
     public ProjectOxfordService() {
         super("ProjectOxfordService");
@@ -22,29 +23,24 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        processNewFile(intent.getStringExtra("filename"));
-    }
-
-    @Override
-    public void onCreate() {
-        client = SpeechRecognitionServiceFactory.createDataClient(
-            SpeechRecognitionMode.LongDictation,
-            "en_us",
-            this,
-            "00c3a2a047cb4085831e5d1cc483af22");
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        processNewFile(intent.getStringExtra("filename"));
-        return Service.START_NOT_STICKY;
+        entry = (Entry) intent.getSerializableExtra(KEY_ENTRY);
+        if (entry != null) {
+            processNewFile(entry.getAudioFilePath());
+        } else {
+            Log.e(TAG, "IntentService cannot process null Entry");
+        }
     }
 
     public void processNewFile(String filename) {
+        final DataRecognitionClient client = SpeechRecognitionServiceFactory.createDataClient(
+                SpeechRecognitionMode.LongDictation,
+                "en_us",
+                ProjectOxfordService.this,
+                "00c3a2a047cb4085831e5d1cc483af22");
         try {
             File audioFile = new File(filename);
-//            File audioFile = new File("/storage/emulated/0/WindowMirror/whatstheweatherlike.wav");
             InputStream fileStream = new FileInputStream(audioFile);
+//            File audioFile = new File("/storage/emulated/0/WindowMirror/whatstheweatherlike.wav");
 //            InputStream fileStream = getAssets().open("whatstheweatherlike.wav");
             int bytesRead = 0;
             byte[] buffer = new byte[1024];
@@ -68,26 +64,33 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
 
     @Override
     public void onPartialResponseReceived(String s) {
-
     }
 
     @Override
     public void onFinalResponseReceived(RecognitionResult recognitionResult) {
         Log.v(TAG, "Response received!");
+        if (recognitionResult != null && recognitionResult.Results != null
+                && recognitionResult.Results.length > 0) {
+            final String transcription = recognitionResult.Results[0].DisplayText;
+            Log.v(TAG, "Transcription Result: " + transcription);
+            if (entry != null) {
+                entry.setTranscription(transcription);
+            }
+            // TODO BROADCAST ENTRY UPDATED MESSAGE
+        }
     }
 
     @Override
     public void onIntentReceived(String s) {
-
     }
 
     @Override
     public void onError(int i, String s) {
-
+        Log.e(TAG, "Error: " + i + ": " + s);
     }
 
     @Override
     public void onAudioEvent(boolean b) {
-
+        Log.v(TAG, "Audio Event: " + b);
     }
 }

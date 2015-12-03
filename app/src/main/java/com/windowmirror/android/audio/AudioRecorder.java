@@ -4,34 +4,40 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.*;
 
 /**
  * @author alliecurry
  */
-public class AudioRecorderV2 {
-    private static final int RECORDER_BPP = 16;//bit depth per sample
+public class AudioRecorder {
+    private static final String TAG = AudioRecorder.class.getSimpleName();
     private static final String OUTPUT_FOLDER = "WindowMirror";
     private static final String TEMP_FILE = "temp.raw";
-    private static final int SAMPLE_RATE = 8000;
+    private static final int SAMPLE_RATE = 16000;
+    private static final int RECORDER_BPP = 16; // bit depth per sample
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 
-    private AudioRecord mAudioRecorder = null;
-    private int bufferSize = 0;
+    private AudioRecord audioRecord = null;
+    private AudioListener listener;
     private Thread recordThread = null;
+
+    private int bufferSize = 0;
     public boolean isRecording = false;
     private String fileNameSaved = null;
 
-    public AudioRecorderV2(final String fileName){
+    public AudioRecorder(final String fileName, final AudioListener listener){
         bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNELS, AUDIO_ENCODING);
         fileNameSaved = fileName;
+        this.listener = listener;
     }
 
-    public String getTempFileName(){
+    /** @return String full file path of the initial recorded raw file. */
+    public String getTempFileName() {
         String filepath = Environment.getExternalStorageDirectory().getPath();
-        File file = new File(filepath,OUTPUT_FOLDER);
+        File file = new File(filepath, OUTPUT_FOLDER);
 
         if(!file.exists()){
             file.mkdirs();
@@ -47,70 +53,70 @@ public class AudioRecorderV2 {
 
 
     public void startRecording(){
-        //Initialize mAudioRecorder object with InputSource, Sample rate, number of channel, audio encoding and buffer size of output stream
-        mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNELS, AUDIO_ENCODING, bufferSize );
-        //Set to Recording state
-        mAudioRecorder.startRecording();
+        //Initialize audioRecord object with InputSource, Sample rate, number of channel, audio encoding and buffer size of output stream
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNELS, AUDIO_ENCODING, bufferSize );
+        audioRecord.startRecording();
         isRecording = true;
-        recordThread = new Thread(new Runnable() {
 
+        recordThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 writeRecordedDataToRawFile();
             }
         });
         recordThread.start();
-    }//end of startRecording()
+    }
 
-    public void writeRecordedDataToRawFile(){
+    public void writeRecordedDataToRawFile() {
         byte data[] = new byte[bufferSize];
         String fileName = getTempFileName();
-        FileOutputStream fos = null;
+        FileOutputStream fos;
 
-        try{
+        try {
             fos = new FileOutputStream(fileName);
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
+        } catch(FileNotFoundException e){
+            Log.e(TAG, e.toString());
+            if (listener != null) {
+                listener.onAudioRecordError();
+            }
+            return;
         }
 
-        int read = 0;
-        if(null!= fos){
-            while(isRecording){
-                read = mAudioRecorder.read(data, 0, bufferSize);
-                if(AudioRecord.ERROR_INVALID_OPERATION != read){
-                    try{
-                        fos.write(data);
-                    }catch(IOException e){
-                        e.printStackTrace();
-                    }
+        int read;
+        while(isRecording) {
+            read = audioRecord.read(data, 0, bufferSize);
+            if (read != AudioRecord.ERROR_INVALID_OPERATION){
+                try {
+                    fos.write(data);
+                } catch(IOException e) {
+                    Log.e(TAG, e.toString());
                 }
             }
-            try{
-                fos.close();
-            }catch(IOException e){
-                e.printStackTrace();
-            }
         }
-    }//end of writeRecordedDataToRawFile()
 
-    public void stopRecording(final AudioRecordThread.OnCompleteListener onCompleteListener){
-        if(null!= mAudioRecorder){
+        try {
+            fos.close();
+        } catch(IOException e) {
+            Log.e(TAG, e.toString());
+        }
+    }
+
+    public void stopRecording() {
+        if (audioRecord != null) {
             isRecording = false;
-            mAudioRecorder.stop();
-            mAudioRecorder.release();
-            mAudioRecorder = null;
+            audioRecord.stop();
+            audioRecord.release();
+            audioRecord = null;
             recordThread = null;
         }
 
         saveFromTempToWavFile(getTempFileName(), fileNameSaved);
-        onCompleteListener.onComplete(fileNameSaved);
-        //deleteTempFile();
-    }//end of stopRecording()
+        listener.onAudioRecordComplete(fileNameSaved);
+    }
 
     public void saveFromTempToWavFile(String tempFile, String wavFile){
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
+        FileInputStream fis;
+        FileOutputStream fos;
 
         long totalAudioDataLen = 0;
         long totalDataLen = totalAudioDataLen + 36;
@@ -140,7 +146,7 @@ public class AudioRecorderV2 {
         }catch(IOException e){
             e.printStackTrace();
         }
-    }//end of saveFromTempToWavFile
+    }
 
     public void createWavFile(FileOutputStream fos, long totalAudioDataLen, long totalDataLen, long sampleRate, int numberOfChannel, long byteRate){
         byte[] mWaveFileHeader = new byte[44];
@@ -201,10 +207,15 @@ public class AudioRecorderV2 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }//end of createWaveFile()
+    }
 
-    public void deleteTempFile(){
+    public void deleteTempFile() {
         File file = new File(getTempFileName());
         file.delete();
+    }
+
+    public interface AudioListener {
+        void onAudioRecordError();
+        void onAudioRecordComplete(final String filePath);
     }
 }
