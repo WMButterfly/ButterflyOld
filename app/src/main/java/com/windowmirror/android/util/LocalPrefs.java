@@ -68,6 +68,26 @@ public final class LocalPrefs {
         HISTORY.add(0, entry);
     }
 
+    public static void updateEntry(final Context context, final Entry entry) {
+        if (HISTORY == null) {
+            getStoredEntries(context);
+        }
+
+        boolean updated = false;
+        for (final Entry e : HISTORY) {
+            if (entry.getTimestamp() == e.getTimestamp()) {
+                e.setTranscription(entry.getTranscription());
+                updated = true;
+                break;
+            }
+        }
+
+        if (!updated) {
+            // Entry was not found ... add as new entry
+            HISTORY.add(0, entry);
+        }
+    }
+
     private static Gson getDefaultGson() {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)

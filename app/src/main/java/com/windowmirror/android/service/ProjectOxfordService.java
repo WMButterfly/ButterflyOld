@@ -2,9 +2,11 @@ package com.windowmirror.android.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.microsoft.projectoxford.speechrecognition.*;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.util.LocalPrefs;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +15,7 @@ import java.io.InputStream;
 
 public class ProjectOxfordService extends IntentService implements ISpeechRecognitionServerEvents {
     private static final String TAG = "ProjectOxfordService";
+    public static final String ACTION_ENTRY_UPDATED = "wmeupdate";
     public static final String KEY_ENTRY = "entry";
 
     private Entry entry;
@@ -75,8 +78,10 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
             Log.v(TAG, "Transcription Result: " + transcription);
             if (entry != null) {
                 entry.setTranscription(transcription);
+                LocalPrefs.updateEntry(this, entry);
             }
-            // TODO BROADCAST ENTRY UPDATED MESSAGE
+            final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
     }
 
