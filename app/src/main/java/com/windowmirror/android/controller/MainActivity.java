@@ -1,13 +1,22 @@
 package com.windowmirror.android.controller;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import com.windowmirror.android.R;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.LocalPrefs;
+
+import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
 
 /**
  * The Activity that starts on app launch.
@@ -20,6 +29,8 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final IntentFilter intentFilter = new IntentFilter(ProjectOxfordService.ACTION_ENTRY_UPDATED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new EntryBroadcastReceiver(), intentFilter);
     }
 
     @Override
@@ -52,6 +63,17 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         final Fragment fragmentBottom = getSupportFragmentManager().findFragmentById(R.id.fragment_bottom);
         if (fragmentBottom instanceof HistoryListFragment) {
             ((HistoryListFragment) fragmentBottom).notifyDataSetChanged();
+        }
+    }
+
+    private class EntryBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.v("allie", "RECEIVEDD THE THINGS"); // TODO REMOVE
+            final Entry entry = (Entry) intent.getSerializableExtra(KEY_ENTRY);
+            if (entry != null) {
+                onEntryUpdated(entry);
+            }
         }
     }
 }

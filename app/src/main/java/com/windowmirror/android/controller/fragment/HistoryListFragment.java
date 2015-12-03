@@ -35,6 +35,9 @@ public class HistoryListFragment extends Fragment implements HistoryAdapter.List
         adapter = new HistoryAdapter(getActivity(), this);
         adapter.addAll(LocalPrefs.getStoredEntries(getActivity()));
         if (layout instanceof ListView) {
+            final View header = inflater.inflate(R.layout.history_header, (ViewGroup) layout, false);
+            ((ListView) layout).addHeaderView(header);
+            ((ListView) layout).setHeaderDividersEnabled(true);
             ((ListView) layout).setAdapter(adapter);
         }
         return layout;
