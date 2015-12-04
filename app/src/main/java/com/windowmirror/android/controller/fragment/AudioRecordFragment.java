@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecorder;
@@ -37,7 +37,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private static final int AUDIO_BIT_RATE = 256000;
     private static final int AUDIO_SAMPLE_RATE = 16000;
     private boolean isRecording = false;
-    private TextView recordButton;
+    private ImageView recordButton;
     private MediaRecorder mediaRecorder = null;
 
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
@@ -55,7 +55,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
 
         // Initialize record button listener
-        recordButton = (TextView) layout.findViewById(R.id.button_record);
+        recordButton = (ImageView) layout.findViewById(R.id.button_record);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,10 +87,10 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     private void onRecordClick() {
         if (isRecording) {
-            recordButton.setText(R.string.record_start);
+            recordButton.setSelected(false);
             stopRecording();
         } else {
-            recordButton.setText(R.string.record_stop);
+            recordButton.setSelected(true);
             audioFilePath = FileUtility.getDirectoryPath() + "/" + FileUtility.generateAudioFileName();
             startRecording(audioFilePath);
         }
@@ -99,7 +99,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     private void onRecordFail() {
         isRecording = false;
-        recordButton.setText(R.string.record_start);
+        recordButton.setSelected(false);
     }
 
     private AudioRecorder audioTest;
