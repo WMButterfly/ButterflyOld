@@ -4,7 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.MediaRecorder;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,15 +34,14 @@ import com.windowmirror.android.util.FileUtility;
 public class AudioRecordFragment extends Fragment implements AudioRecorder.AudioListener {
     public static final String TAG = AudioRecordFragment.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 0xee;
-    private static final int AUDIO_BIT_RATE = 256000;
-    private static final int AUDIO_SAMPLE_RATE = 16000;
     private boolean isRecording = false;
     private ImageView recordButton;
-    private MediaRecorder mediaRecorder = null;
 
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
     private String audioFilePath;
     private long startTime;
+
+    private MediaPlayer soundEffectPlayer;
 
     @Nullable
     @Override
@@ -63,8 +62,15 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             }
         });
 
-
         return layout;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (soundEffectPlayer != null) {
+            soundEffectPlayer.release();
+        }
     }
 
     /**
@@ -86,6 +92,8 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     private void onRecordClick() {
+        playSoundEffect();
+
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();
@@ -157,6 +165,19 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
                         Toast.LENGTH_SHORT).show();
                 }
                 break;
+        }
+    }
+
+    private void playSoundEffect() {
+        if (soundEffectPlayer == null) {
+            soundEffectPlayer = MediaPlayer.create(getActivity(), R.raw.wmbeep);
+            soundEffectPlayer.setVolume(0.25f, 0.25f);
+        }
+
+        try {
+            soundEffectPlayer.start();
+        } catch (final IllegalStateException e) {
+            Log.e(TAG, "Could not start sound effect: " + e.toString());
         }
     }
 }
