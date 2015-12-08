@@ -77,7 +77,13 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
             final String transcription = recognitionResult.Results[0].DisplayText;
             Log.v(TAG, "Transcription Result: " + transcription);
             if (entry != null) {
-                entry.setTranscription(transcription);
+                String oldTranscription = entry.getTranscription();
+                if (oldTranscription == null) {
+                    oldTranscription = "";
+                } else { // Adding a space between new and old transcription.
+                    oldTranscription += " ";
+                }
+                entry.setTranscription(oldTranscription + transcription);
                 LocalPrefs.updateEntry(this, entry);
             }
             final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
