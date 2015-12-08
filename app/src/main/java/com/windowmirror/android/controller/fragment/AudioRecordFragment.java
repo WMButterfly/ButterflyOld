@@ -4,7 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.MediaRecorder;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecorder;
@@ -34,15 +34,14 @@ import com.windowmirror.android.util.FileUtility;
 public class AudioRecordFragment extends Fragment implements AudioRecorder.AudioListener {
     public static final String TAG = AudioRecordFragment.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 0xee;
-    private static final int AUDIO_BIT_RATE = 256000;
-    private static final int AUDIO_SAMPLE_RATE = 16000;
     private boolean isRecording = false;
-    private TextView recordButton;
-    private MediaRecorder mediaRecorder = null;
+    private ImageView recordButton;
 
     // File path to the most recent recording. Includes file name (eg. "storage/wm/audio.wav")
     private String audioFilePath;
     private long startTime;
+
+    private MediaPlayer soundEffectPlayer;
 
     @Nullable
     @Override
@@ -55,7 +54,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
 
         // Initialize record button listener
-        recordButton = (TextView) layout.findViewById(R.id.button_record);
+        recordButton = (ImageView) layout.findViewById(R.id.button_record);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,8 +62,15 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             }
         });
 
-
         return layout;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (soundEffectPlayer != null) {
+            soundEffectPlayer.release();
+        }
     }
 
     /**
@@ -86,11 +92,13 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     private void onRecordClick() {
+        playSoundEffect();
+
         if (isRecording) {
-            recordButton.setText(R.string.record_start);
+            recordButton.setSelected(false);
             stopRecording();
         } else {
-            recordButton.setText(R.string.record_stop);
+            recordButton.setSelected(true);
             audioFilePath = FileUtility.getDirectoryPath() + "/" + FileUtility.generateAudioFileName();
             startRecording(audioFilePath);
         }
@@ -99,7 +107,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     private void onRecordFail() {
         isRecording = false;
-        recordButton.setText(R.string.record_start);
+        recordButton.setSelected(false);
     }
 
     private AudioRecorder audioTest;
@@ -157,6 +165,19 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
                         Toast.LENGTH_SHORT).show();
                 }
                 break;
+        }
+    }
+
+    private void playSoundEffect() {
+        if (soundEffectPlayer == null) {
+            soundEffectPlayer = MediaPlayer.create(getActivity(), R.raw.wmbeep);
+            soundEffectPlayer.setVolume(0.25f, 0.25f);
+        }
+
+        try {
+            soundEffectPlayer.start();
+        } catch (final IllegalStateException e) {
+            Log.e(TAG, "Could not start sound effect: " + e.toString());
         }
     }
 }

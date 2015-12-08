@@ -10,6 +10,9 @@ import android.widget.TextView;
 import com.windowmirror.android.R;
 import com.windowmirror.android.model.Entry;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,6 +20,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class HistoryAdapter extends ArrayAdapter<Entry> {
     private static final int TEXT_MAX_LINES = 2;
+    private static final long MAX_RELATIVE_TIME = 21600000;
+    private static final SimpleDateFormat LONG_FORMAT = new SimpleDateFormat("MMM d yyyy h:mm a", Locale.US);
     private Listener listener;
 
     public HistoryAdapter(final Context context, final Listener listener) {
@@ -82,6 +87,11 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
     private static CharSequence getRelativeTime(final Context c, final long millis) {
         final long now = System.currentTimeMillis();
         final long difference = now - millis;
+
+        if (difference > MAX_RELATIVE_TIME) {
+            return LONG_FORMAT.format(new Date(millis));
+        }
+
         return (difference >= 0 && difference <= DateUtils.MINUTE_IN_MILLIS) ?
                 c.getString(R.string.now) :
                 DateUtils.getRelativeTimeSpanString(

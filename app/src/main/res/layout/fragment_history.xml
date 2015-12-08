@@ -3,6 +3,9 @@
           android:orientation="vertical"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
-          android:divider="#C0C0C0"
-          android:dividerHeight="1dp"
+          android:divider="@android:color/transparent"
+          android:dividerHeight="4dp"
+          android:padding="8dp"
+          android:scrollbarStyle="outsideOverlay"
+          android:clipToPadding="false"
         />
