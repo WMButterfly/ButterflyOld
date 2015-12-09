@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,6 +56,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
         // Initialize record button listener
         recordButton = (ImageView) layout.findViewById(R.id.button_record);
+        recordButton.setColorFilter(getResources().getColor(R.color.royal), PorterDuff.Mode.SRC_ATOP);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
