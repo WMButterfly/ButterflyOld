@@ -94,18 +94,24 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     private void onRecordClick() {
-        playSoundEffect();
-
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();
+            playSoundEffect(null);
         } else {
+            playSoundEffect(onSoundEffectComplete);
+        }
+        isRecording = !isRecording;
+    }
+
+    private MediaPlayer.OnCompletionListener onSoundEffectComplete = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
             recordButton.setSelected(true);
             audioFilePath = FileUtility.getDirectoryPath() + "/" + FileUtility.generateAudioFileName();
             startRecording(audioFilePath);
         }
-        isRecording = !isRecording;
-    }
+    };
 
     private void onRecordFail() {
         isRecording = false;
@@ -170,11 +176,13 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
     }
 
-    private void playSoundEffect() {
+    private void playSoundEffect(final MediaPlayer.OnCompletionListener onComplete) {
         if (soundEffectPlayer == null) {
             soundEffectPlayer = MediaPlayer.create(getActivity(), R.raw.wmbeep);
             soundEffectPlayer.setVolume(0.25f, 0.25f);
         }
+
+        soundEffectPlayer.setOnCompletionListener(onComplete);
 
         try {
             soundEffectPlayer.start();
