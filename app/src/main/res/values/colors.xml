@@ -3,5 +3,6 @@
 
     <color name="lilac">#F5EBFD</color>
     <color name="royal">#603F81</color>
+    <color name="royal_light">#22603F81</color>
 
 </resources>

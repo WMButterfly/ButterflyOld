@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:background="@drawable/card_background"
-              android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:gravity="center"
         >
+
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:src="@drawable/wm"
+            android:layout_centerInParent="true"
+            android:scaleType="centerInside"
+            android:alpha="0.1"
+            />
 
     <ImageView
             android:id="@+id/button_record"
@@ -16,6 +25,7 @@
             android:src="@drawable/mic"
             android:textColor="@android:color/white"
             android:contentDescription="@string/record_start"
+            android:layout_centerInParent="true"
             />
 
-</LinearLayout>
+</RelativeLayout>
