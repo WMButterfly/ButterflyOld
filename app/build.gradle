@@ -44,3 +44,7 @@ dependencies {
     compile 'com.microsoft.projectoxford:speechrecognition:0.5.2'
     compile 'com.google.code.gson:gson:2.3'
 }
+
+ant.importBuild 'assets.xml'
+preBuild.dependsOn(list, checksum)
+clean.dependsOn(clean_assets)
