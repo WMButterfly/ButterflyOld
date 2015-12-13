@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import com.windowmirror.android.R;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
@@ -69,7 +68,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     private class EntryBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.v("allie", "RECEIVEDD THE THINGS"); // TODO REMOVE
             final Entry entry = (Entry) intent.getSerializableExtra(KEY_ENTRY);
             if (entry != null) {
                 onEntryUpdated(entry);
