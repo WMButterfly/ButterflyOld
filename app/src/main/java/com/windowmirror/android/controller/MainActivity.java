@@ -1,5 +1,6 @@
 package com.windowmirror.android.controller;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +13,9 @@ import com.windowmirror.android.R;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.ProjectOxfordService;
+import com.windowmirror.android.service.SphynxService;
 import com.windowmirror.android.util.LocalPrefs;
 
 import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
@@ -30,6 +33,12 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         setContentView(R.layout.activity_main);
         final IntentFilter intentFilter = new IntentFilter(ProjectOxfordService.ACTION_ENTRY_UPDATED);
         LocalBroadcastManager.getInstance(this).registerReceiver(new EntryBroadcastReceiver(), intentFilter);
+
+        // TODO For Play Store: add Privacy Terms and have user accept them before starting Service
+        BootReceiver.enable(this);
+        if (!isServiceRunning(this)) {
+            startService(new Intent(getApplicationContext(), SphynxService.class));
+        }
     }
 
     @Override
@@ -73,5 +82,15 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
                 onEntryUpdated(entry);
             }
         }
+    }
+
+    private static boolean isServiceRunning(final Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (SphynxService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
