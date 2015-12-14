@@ -60,7 +60,8 @@ public class SphynxService extends Service implements RecognitionListener {
                 .setBoolean("-allphone_ci", true)
                 .getRecognizer();
         recognizer.addListener(this);
-        recognizer.addKeyphraseSearch("kws", "okay window mirror");
+        recognizer.addKeyphraseSearch(KEY_START, START_KEYWORD);
+        recognizer.addKeyphraseSearch(KEY_STOP, STOP_KEYWORD);
     }
 
     @Override
@@ -118,7 +119,11 @@ public class SphynxService extends Service implements RecognitionListener {
         }
     }
 
-    private void startRecognizer(final String key) {
+    private void startRecognizer(final String key) throws RuntimeException {
+        if (recognizer == null) {
+            Log.w(TAG, "Could not start Sphynx Recognizer: No recognizer instance found.");
+            return;
+        }
         recognizer.stop();
         recognizer.startListening(key);
         Log.d(TAG, "Recognizer started");
