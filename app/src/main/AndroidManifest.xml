@@ -23,10 +23,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.ProjectOxfordService"
-                 >
 
-        </service>
+        <service android:name=".service.ProjectOxfordService" />
+        <service android:name=".service.SphynxService" />
 
     </application>
 
