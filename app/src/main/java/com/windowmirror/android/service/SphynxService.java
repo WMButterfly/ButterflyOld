@@ -41,7 +41,7 @@ public class SphynxService extends Service implements RecognitionListener {
             final File assetDir = assets.syncAssets();
             setupRecognizer(assetDir);
             startRecognizer(START_KEYWORD);
-        } catch (final IOException e) {
+        } catch (final IOException | RuntimeException e) {
             Log.e(TAG, "Could not start Sphynx: " + e.toString());
         }
 
@@ -124,6 +124,7 @@ public class SphynxService extends Service implements RecognitionListener {
             Log.w(TAG, "Could not start Sphynx Recognizer: No recognizer instance found.");
             return;
         }
+
         recognizer.stop();
         recognizer.startListening(key);
         Log.d(TAG, "Recognizer started");
