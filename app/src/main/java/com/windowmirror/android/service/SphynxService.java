@@ -25,6 +25,7 @@ public class SphynxService extends Service implements RecognitionListener {
     private static final String STOP_KEYWORD = "thank you window mirror";
     private static final String KEY_START = "wm1";
     private static final String KEY_STOP = "wm2";
+    private SpeechRecognizer recognizer;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -36,9 +37,10 @@ public class SphynxService extends Service implements RecognitionListener {
         Log.i("SphynxService", "onStartCommand " + startId + ": " + intent);
 
         try {
-            Assets assets = new Assets(getApplicationContext());
-            File assetDir = assets.syncAssets();
+            final Assets assets = new Assets(getApplicationContext());
+            final File assetDir = assets.syncAssets();
             setupRecognizer(assetDir);
+            startRecognizer(START_KEYWORD);
         } catch (final IOException e) {
             Log.e(TAG, "Could not start Sphynx: " + e.toString());
         }
@@ -46,7 +48,6 @@ public class SphynxService extends Service implements RecognitionListener {
         return START_STICKY;
     }
 
-    private SpeechRecognizer recognizer;
     private void setupRecognizer(File assetsDir) throws IOException {
         recognizer = defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
