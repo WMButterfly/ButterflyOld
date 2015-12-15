@@ -22,10 +22,10 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
  */
 public class SphynxService extends Service implements RecognitionListener {
     private static final String TAG = SphynxService.class.getSimpleName();
-    private static final String START_PHRASE = "okay window mirror";
-    private static final String STOP_PHRASE = "thank you window mirror";
-    private static final String KEY_START = "wm1";
-    private static final String KEY_STOP = "wm2";
+    private static final String START_PHRASE = "okay window mir";
+    private static final String STOP_PHRASE = "thank you window mir";
+    public static final String KEY_START = "wm1";
+    public static final String KEY_STOP = "wm2";
     private SpeechRecognizer recognizer;
 
     private Looper mServiceLooper;
