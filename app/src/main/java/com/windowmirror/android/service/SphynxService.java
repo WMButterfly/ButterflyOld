@@ -1,11 +1,12 @@
 package com.windowmirror.android.service;
 
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.*;
 import android.os.Process;
 import android.util.Log;
-import android.widget.Toast;
+import com.windowmirror.android.controller.MainActivity;
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -71,7 +72,7 @@ public class SphynxService extends Service implements RecognitionListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("SphynxService", "onStartCommand " + startId + ": " + intent);
+        Log.i(TAG, "onStartCommand " + startId + ": " + intent);
 
         Message msg = mServiceHandler.obtainMessage();
 //        msg.arg1 = startId;
@@ -112,12 +113,11 @@ public class SphynxService extends Service implements RecognitionListener {
             return;
         }
         final String text = hypothesis.getHypstr();
-        Log.v(TAG, "---> " + text + " / " + hypothesis.getProb() + " / " + hypothesis.getBestScore());
         if (text.equalsIgnoreCase(START_PHRASE)) {
-            // TODO open app / start recording
+            openMainApp(true);
             startRecognizer(KEY_STOP);
         } else if (text.equalsIgnoreCase(STOP_PHRASE)) {
-            // TODO stop recording
+            openMainApp(false);
             startRecognizer(KEY_START);
         }
     }
@@ -125,10 +125,7 @@ public class SphynxService extends Service implements RecognitionListener {
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
-            Toast.makeText(getApplicationContext(),
-                    hypothesis.getHypstr(),
-                    Toast.LENGTH_SHORT)
-                    .show();
+            Log.d(TAG, ">>> Final Result: " + hypothesis.getHypstr());
         }
     }
 
@@ -160,5 +157,16 @@ public class SphynxService extends Service implements RecognitionListener {
         recognizer.stop();
         recognizer.startListening(key);
         Log.d(TAG, "Recognizer started");
+    }
+
+    private void openMainApp(final boolean isStart) {
+        final Intent intent = new Intent(this, MainActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+        intent.setComponent(new ComponentName(getApplicationContext().getPackageName(),
+                MainActivity.class.getName()));
+        intent.putExtra(KEY_START, isStart);
+        startActivity(intent);
     }
 }
