@@ -115,10 +115,12 @@ public class SphynxService extends Service implements RecognitionListener {
         final String text = hypothesis.getHypstr();
         if (text.equalsIgnoreCase(START_PHRASE)) {
             openMainApp(true);
-            startRecognizer(KEY_STOP);
+            stopSelf();
+//            startRecognizer(KEY_STOP);
         } else if (text.equalsIgnoreCase(STOP_PHRASE)) {
             openMainApp(false);
-            startRecognizer(KEY_START);
+            stopSelf();
+//            startRecognizer(KEY_START);
         }
     }
 
@@ -163,7 +165,8 @@ public class SphynxService extends Service implements RecognitionListener {
         final Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
         intent.setComponent(new ComponentName(getApplicationContext().getPackageName(),
                 MainActivity.class.getName()));
         intent.putExtra(KEY_START, isStart);

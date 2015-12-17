@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
+import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
@@ -98,6 +99,9 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             recordButton.setSelected(false);
             stopRecording();
             playSoundEffect(null);
+            if (getActivity() instanceof RecordListener) {
+                ((RecordListener) getActivity()).onRecordStop();
+            }
         } else {
             playSoundEffect(onSoundEffectComplete);
         }
@@ -109,6 +113,11 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         public void onCompletion(MediaPlayer mediaPlayer) {
             recordButton.setSelected(true);
             audioFilePath = FileUtility.getDirectoryPath() + "/" + FileUtility.generateAudioFileName();
+
+            if (getActivity() instanceof RecordListener) {
+                ((RecordListener) getActivity()).onRecordStart();
+            }
+
             startRecording(audioFilePath);
         }
     };
@@ -116,6 +125,9 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private void onRecordFail() {
         isRecording = false;
         recordButton.setSelected(false);
+        if (getActivity() instanceof RecordListener) {
+            ((RecordListener) getActivity()).onRecordStop();
+        }
     }
 
     private AudioRecorder audioTest;

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import com.windowmirror.android.util.LocalPrefs;
 
 /**
  * @author alliecurry
@@ -14,8 +15,11 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("BootReceiver", "--- onReceive --- Starting Sphynx Service...");
-        context.startService(new Intent(context, SphynxService.class));
+        Log.d("BootReceiver", "--- onReceive");
+        if (LocalPrefs.getIsBackgroundService(context)) {
+            Log.d("BootReceiver", "--- Starting Sphynx Service...");
+            context.startService(new Intent(context, SphynxService.class));
+        }
     }
 
     /** Enabled the BootReceiver until explicitly disabled. */

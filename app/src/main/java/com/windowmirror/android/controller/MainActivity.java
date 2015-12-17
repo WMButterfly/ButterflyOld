@@ -18,6 +18,7 @@ import com.windowmirror.android.controller.dialog.SettingsDialog;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
+import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.ProjectOxfordService;
@@ -30,7 +31,8 @@ import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
  * The Activity that starts on app launch.
  * @author alliecurry
  */
-public class MainActivity extends FragmentActivity implements EntryActionListener, View.OnTouchListener {
+public class MainActivity extends FragmentActivity implements EntryActionListener, View.OnTouchListener,
+        RecordListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MAX_TAP_COUNT = 6;
     private int tapCount = 0;
@@ -51,20 +53,39 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     protected void onResume() {
         super.onResume();
         final Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.getBoolean(SphynxService.KEY_START)) {
+        if (extras != null && extras.containsKey(SphynxService.KEY_START)) {
             Log.d(TAG, "Starting recording from Intent");
             final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_top);
             if (fragment instanceof AudioRecordFragment) {
                 ((AudioRecordFragment) fragment).toggleRecording();
+                return;
             }
         }
 
         // TODO For Play Store: add Privacy Terms and have user accept them before starting Service
         // TODO When the above is added, you may want to set default value for background service to "false" in LocalPrefs
         BootReceiver.enable(this);
-        if (!isServiceRunning(this)) {
-            startService(sphynxIntent = new Intent(getApplicationContext(), SphynxService.class));
+        startSphynxService();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Ensure Entries are stored before going to background
+        LocalPrefs.storeEntries(this);
+
+        // Stop or start sphynx service depending on settings
+        if (LocalPrefs.getIsBackgroundService(this)) {
+            startSphynxService();
+        } else {
+            stopSphynxSerivce();
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d("allie", ">>>> ON NEW INTENT\n" + intent.getExtras());
     }
 
     @Override
@@ -73,16 +94,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
             super.onBackPressed();
         } else { // No more fragments... used to avoid blank screen
             finish();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Ensure Entries are stored before going to background
-        LocalPrefs.storeEntries(this);
-        if (!LocalPrefs.getIsBackgroundService(this)) {
-            stopService(sphynxIntent);
         }
     }
 
@@ -131,6 +142,28 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         dialog.show(getSupportFragmentManager(), SettingsDialog.TAG);
     }
 
+    @Override
+    public void onRecordStart() {
+        stopSphynxSerivce();
+    }
+
+    @Override
+    public void onRecordStop() {
+        startSphynxService();
+    }
+
+    private void startSphynxService() {
+        if (!isServiceRunning(this)) {
+            startService(sphynxIntent = new Intent(getApplicationContext(), SphynxService.class));
+        }
+    }
+
+    private void stopSphynxSerivce() {
+        if (sphynxIntent != null) {
+            stopService(sphynxIntent);
+        }
+    }
+
     private class EntryBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -145,6 +178,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (SphynxService.class.getName().equals(service.service.getClassName())) {
+                Log.d(TAG, ">> SphynxService is already running");
                 return true;
             }
         }
