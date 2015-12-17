@@ -60,7 +60,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onRecordClick();
+                toggleRecording();
             }
         });
 
@@ -93,7 +93,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         return true;
     }
 
-    private void onRecordClick() {
+    public void toggleRecording() {
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();
