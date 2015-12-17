@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:minWidth="400dp"
+              android:minHeight="300dp"
+              android:padding="24dp">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/primary_text_light"
+            android:text="@string/settings"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp"
+            />
+
+    <CheckBox
+            style="@android:style/Widget.Holo.Light.CompoundButton.CheckBox"
+            android:id="@+id/service_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/always_listening"
+            android:textSize="16sp"
+            />
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="34dp"
+            android:text="@string/always_listening_message"
+            />
+
+</LinearLayout>

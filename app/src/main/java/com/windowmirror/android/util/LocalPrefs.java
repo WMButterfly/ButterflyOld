@@ -21,6 +21,7 @@ import java.util.List;
 public final class LocalPrefs {
     private static final String PREFS_NAME = "wmprefs";
     private static final String KEY_ENTRIES = "wments";
+    private static final String KEY_BACKGROUND_SERVICE = "bgsphynx";
 
     /** Local copy of History List as not to cause slow-down.
      * Should be saved when app is closed.
@@ -33,6 +34,17 @@ public final class LocalPrefs {
 
     private static SharedPreferences getPrefs(final Context context) {
         return context.getSharedPreferences(PREFS_NAME, 0);
+    }
+
+    public static boolean getIsBackgroundService(final Context context) {
+        return getPrefs(context).getBoolean(KEY_BACKGROUND_SERVICE, true);
+    }
+
+    public static void setBackgroundService(final Context context, final boolean run) {
+        getPrefs(context)
+                .edit()
+                .putBoolean(KEY_BACKGROUND_SERVICE, run)
+                .commit();
     }
 
     public static List<Entry> getStoredEntries(final Context context) {
