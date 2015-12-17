@@ -83,12 +83,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Log.d("allie", ">>>> ON NEW INTENT\n" + intent.getExtras());
-    }
-
-    @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
             super.onBackPressed();
