@@ -54,8 +54,9 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     protected void onResume() {
         super.onResume();
         final Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.containsKey(SphynxService.KEY_START)) {
+        if (extras != null && extras.getBoolean(SphynxService.KEY_START)) {
             Log.d(TAG, "Starting recording from Intent");
+            getIntent().removeExtra(SphynxService.KEY_START);
             final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_top);
             if (fragment instanceof AudioRecordFragment) {
                 ((AudioRecordFragment) fragment).toggleRecording();
