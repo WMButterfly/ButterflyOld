@@ -12,5 +12,6 @@
     <string name="always_listening_message">Listens for the \'OK WindowMirror\' voice command even when the app is
         closed.
     </string>
+    <string name="save">Save</string>
 
 </resources>

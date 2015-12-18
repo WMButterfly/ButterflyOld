@@ -3,8 +3,8 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:minWidth="400dp"
-              android:minHeight="300dp"
+              android:minWidth="300dp"
+              android:minHeight="200dp"
               android:padding="24dp">
 
     <TextView
@@ -30,6 +30,17 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="34dp"
             android:text="@string/always_listening_message"
+            />
+
+    <TextView
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:textColor="@color/royal"
+            android:text="@string/save"
+            android:textSize="18sp"
+            android:padding="16dp"
             />
 
 </LinearLayout>

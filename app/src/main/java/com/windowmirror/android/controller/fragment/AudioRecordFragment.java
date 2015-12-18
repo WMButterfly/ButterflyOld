@@ -70,9 +70,15 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     @Override
     public void onPause() {
+        if (isRecording) {
+            recordButton.setSelected(false);
+            stopRecording();
+            isRecording = false;
+        }
         super.onPause();
         if (soundEffectPlayer != null) {
             soundEffectPlayer.release();
+            soundEffectPlayer = null;
         }
     }
 
@@ -200,6 +206,10 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             soundEffectPlayer.start();
         } catch (final IllegalStateException e) {
             Log.e(TAG, "Could not start sound effect: " + e.toString());
+            soundEffectPlayer = null;
+            if (onComplete != null) {
+                onComplete.onCompletion(null);
+            }
         }
     }
 }
