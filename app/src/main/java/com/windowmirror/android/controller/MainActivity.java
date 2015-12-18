@@ -5,14 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
+import android.view.*;
 import com.windowmirror.android.R;
 import com.windowmirror.android.controller.dialog.SettingsDialog;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
@@ -39,6 +39,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     private long touchDownMs = 0;
 
     private Intent sphynxIntent;
+    private int prevOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,11 +140,13 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     @Override
     public void onRecordStart() {
         stopSphynxService();
+        lockOrientation();
     }
 
     @Override
     public void onRecordStop() {
         startSphynxService();
+        unlockOrientation();
     }
 
     private void startSphynxService() {
@@ -177,5 +180,52 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
             }
         }
         return false;
+    }
+
+    /** Allows the user to rotate their screen */
+    private void unlockOrientation() {
+        setRequestedOrientation(prevOrientation);
+    }
+
+    /** Prevents the user from rotating their screen and restarting the Activity. */
+    private void lockOrientation() {
+        prevOrientation = getRequestedOrientation();
+        Display display = getWindowManager().getDefaultDisplay();
+        int rotation = display.getRotation();
+        final Point size = new Point();
+        display.getSize(size);
+        int height = size.y;
+        int width = size.x;
+
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                if (width > height) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                }
+                break;
+            case Surface.ROTATION_180:
+                if (height > width) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                }
+                break;
+            case Surface.ROTATION_270:
+                if (width > height) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+                break;
+            default :
+                if (height > width) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+                break;
+        }
     }
 }
