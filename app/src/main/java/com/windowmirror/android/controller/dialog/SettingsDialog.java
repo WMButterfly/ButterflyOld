@@ -28,6 +28,12 @@ public class SettingsDialog extends DialogFragment {
         final View v = inflater.inflate(R.layout.dialog_settings, container, false);
         serviceCheckBox = (CheckBox) v.findViewById(R.id.service_checkbox);
         serviceCheckBox.setChecked(LocalPrefs.getIsBackgroundService(getContext()));
+        v.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        });
 
         final Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
@@ -35,6 +41,8 @@ public class SettingsDialog extends DialogFragment {
             window.requestFeature(Window.FEATURE_NO_TITLE);
             window.setBackgroundDrawableResource(R.drawable.dialog_background);
         }
+
+        setCancelable(false);
 
         return v;
     }

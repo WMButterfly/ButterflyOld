@@ -78,7 +78,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         if (LocalPrefs.getIsBackgroundService(this)) {
             startSphynxService();
         } else {
-            stopSphynxSerivce();
+            stopSphynxService();
         }
     }
 
@@ -138,7 +138,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
 
     @Override
     public void onRecordStart() {
-        stopSphynxSerivce();
+        stopSphynxService();
     }
 
     @Override
@@ -152,7 +152,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         }
     }
 
-    private void stopSphynxSerivce() {
+    private void stopSphynxService() {
         if (sphynxIntent != null) {
             stopService(sphynxIntent);
         }

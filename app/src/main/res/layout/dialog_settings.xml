@@ -32,4 +32,15 @@
             android:text="@string/always_listening_message"
             />
 
+    <TextView
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|end"
+            android:textColor="@color/royal"
+            android:text="@string/save"
+            android:textSize="18sp"
+            android:padding="16dp"
+            />
+
 </LinearLayout>
