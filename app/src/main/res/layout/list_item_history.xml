@@ -29,10 +29,13 @@
             android:textColor="@android:color/primary_text_light"
             />
 
-    <TextView
+    <EditText
             android:id="@+id/transcription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@android:color/tertiary_text_light"
+            android:textSize="14sp"
+            android:background="@null"
             android:layout_below="@id/date"
             android:layout_alignLeft="@id/date"
             android:layout_alignStart="@id/date"
@@ -40,6 +43,9 @@
             android:layout_alignEnd="@id/date"
             android:maxLines="2"
             android:ellipsize="end"
+            android:editable="false"
+            android:inputType="none"
+            android:textIsSelectable="true"
             />
 
 </RelativeLayout>
