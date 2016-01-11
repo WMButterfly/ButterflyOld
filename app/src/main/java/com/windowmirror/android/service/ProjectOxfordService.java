@@ -6,6 +6,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.microsoft.projectoxford.speechrecognition.*;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.util.LocalPrefs;
 
 import java.io.File;
@@ -28,6 +29,9 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
     protected void onHandleIntent(Intent intent) {
         entry = (Entry) intent.getSerializableExtra(KEY_ENTRY);
         if (entry != null) {
+            entry.incrementOxfordTries();
+            entry.setOxfordStatus(OxfordStatus.PENDING);
+            entry.setOxfordTimestamp(System.currentTimeMillis());
             processNewFile(entry.getAudioFilePath());
         } else {
             Log.e(TAG, "IntentService cannot process null Entry");
@@ -43,9 +47,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
         try {
             File audioFile = new File(filename);
             InputStream fileStream = new FileInputStream(audioFile);
-//            File audioFile = new File("/storage/emulated/0/WindowMirror/whatstheweatherlike.wav");
-//            InputStream fileStream = getAssets().open("whatstheweatherlike.wav");
-            int bytesRead = 0;
+            int bytesRead;
             byte[] buffer = new byte[1024];
 
             do {
@@ -83,7 +85,13 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 } else { // Adding a space between new and old transcription.
                     oldTranscription += " ";
                 }
-                entry.setTranscription(oldTranscription + transcription);
+                final String fullTranscription = oldTranscription + transcription;
+                if (fullTranscription.trim().isEmpty()) {
+                    entry.updateForEmptyTranscription();
+                } else {
+                    entry.setOxfordStatus(OxfordStatus.SUCCESSFUL);
+                }
+                entry.setTranscription(fullTranscription);
                 LocalPrefs.updateEntry(this, entry);
             }
             final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
