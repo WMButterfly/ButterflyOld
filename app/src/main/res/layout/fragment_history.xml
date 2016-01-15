@@ -9,4 +9,5 @@
           android:scrollbarStyle="outsideOverlay"
           android:clipToPadding="false"
           android:background="@color/royal_light"
+          android:descendantFocusability="afterDescendants"
         />

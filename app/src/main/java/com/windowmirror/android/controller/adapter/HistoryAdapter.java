@@ -6,9 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.util.NetworkUtility;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,11 +51,28 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
         final CharSequence dateStr = getRelativeTime(getContext(), entry.getTimestamp());
         viewHolder.date.setText(dateStr);
 
+        viewHolder.transcription.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                viewHolder.transcription.setMaxLines(TEXT_MAX_LINES);
+                if (viewHolder.transcription instanceof EditText) {
+                    ((EditText) viewHolder.transcription).setSelection(0,
+                            viewHolder.transcription.length());
+                }
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                        getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("WindowMirror",
+                        viewHolder.transcription.getText());
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(getContext(), "Text copied to clipboard", Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+        });
+
         final String transcriptionStr = entry.getTranscription();
-        if (transcriptionStr == null || transcriptionStr.isEmpty()) {
-            // Transcription not found...
-            viewHolder.transcription.setText(R.string.transcription_pending);
-        } else {
+        if (transcriptionStr != null && !transcriptionStr.isEmpty()) {
             viewHolder.transcription.setText(transcriptionStr);
             final View.OnClickListener onClick = new View.OnClickListener() {
                 @Override
@@ -62,10 +82,38 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
                     } else {
                         viewHolder.transcription.setMaxLines(TEXT_MAX_LINES);
                     }
+                    row.invalidate();
+                    if (viewHolder.transcription instanceof EditText) {
+                        ((EditText) viewHolder.transcription).setSelection(0);
+                    }
                 }
             };
             viewHolder.transcription.setOnClickListener(onClick);
             viewHolder.date.setOnClickListener(onClick);
+        } else {
+            switch (entry.getOxfordStatus()) {
+                case NONE:
+                case PENDING:
+                    if (NetworkUtility.isNetworkAvailable(getContext())) {
+                        viewHolder.transcription.setText(R.string.transcription_pending);
+                    } else {
+                        viewHolder.transcription.setText(R.string.transcription_pending_no_network);
+                    }
+                    break;
+                case SUCCESSFUL:
+                    viewHolder.transcription.setText(R.string.transcription_success);
+                    break;
+                case REQUIRES_RETRY:
+                    if (NetworkUtility.isNetworkAvailable(getContext())) {
+                        viewHolder.transcription.setText(R.string.transcription_retry);
+                    } else {
+                        viewHolder.transcription.setText(R.string.transcription_retry_no_network);
+                    }
+                    break;
+                case FAILED:
+                    viewHolder.transcription.setText(R.string.transcription_failed);
+                    break;
+            }
         }
 
 

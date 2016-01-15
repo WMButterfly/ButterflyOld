@@ -33,6 +33,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
             entry.setOxfordStatus(OxfordStatus.PENDING);
             entry.setOxfordTimestamp(System.currentTimeMillis());
             processNewFile(entry.getAudioFilePath());
+            entry.updateForEmptyTranscription();
         } else {
             Log.e(TAG, "IntentService cannot process null Entry");
         }
@@ -46,6 +47,14 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 "00c3a2a047cb4085831e5d1cc483af22");
         try {
             File audioFile = new File(filename);
+
+            if (!audioFile.exists() || audioFile.length() == 0) {
+                entry.setOxfordStatus(OxfordStatus.FAILED);
+                LocalPrefs.updateEntry(this, entry);
+                broadcastEntry();
+                return;
+            }
+
             InputStream fileStream = new FileInputStream(audioFile);
             int bytesRead;
             byte[] buffer = new byte[1024];
@@ -61,6 +70,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
             } while (bytesRead > 0);
         } catch (IOException ex) {
             Log.e(TAG, ex.toString());
+            onTranscriptionFail();
         } finally {
             client.endAudio();
         }
@@ -93,7 +103,23 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 }
                 entry.setTranscription(fullTranscription);
                 LocalPrefs.updateEntry(this, entry);
+                broadcastEntry();
             }
+        } else {
+            onTranscriptionFail();
+        }
+    }
+
+    private void onTranscriptionFail() {
+        if (entry != null) {
+            entry.updateForEmptyTranscription();
+            LocalPrefs.updateEntry(this, entry);
+            broadcastEntry();
+        }
+    }
+
+    private void broadcastEntry() {
+        if (entry != null) {
             final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
@@ -106,6 +132,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
     @Override
     public void onError(int i, String s) {
         Log.e(TAG, "Error: " + i + ": " + s);
+        onTranscriptionFail();
     }
 
     @Override

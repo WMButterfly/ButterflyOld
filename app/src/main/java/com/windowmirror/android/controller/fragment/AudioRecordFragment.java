@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -100,7 +101,8 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         return true;
     }
 
-    public void toggleRecording() {
+    /** @return true if the recording is now set to begin */
+    public boolean toggleRecording() {
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();
@@ -112,6 +114,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             playSoundEffect(onSoundEffectComplete);
         }
         isRecording = !isRecording;
+        return isRecording;
     }
 
     private MediaPlayer.OnCompletionListener onSoundEffectComplete = new MediaPlayer.OnCompletionListener() {
@@ -124,7 +127,12 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
                 ((RecordListener) getActivity()).onRecordStart();
             }
 
-            startRecording(audioFilePath);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startRecording(audioFilePath);
+                }
+            }, 250);
         }
     };
 

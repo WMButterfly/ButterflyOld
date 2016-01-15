@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.*;
 import android.os.Process;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.windowmirror.android.controller.MainActivity;
 import edu.cmu.pocketsphinx.Assets;
@@ -23,6 +24,8 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
  */
 public class SphynxService extends Service implements RecognitionListener {
     private static final String TAG = SphynxService.class.getSimpleName();
+    public static final String ACTION_START = "wmstart";
+    public static final String ACTION_STOP = "wmstop";
     private static final String START_PHRASE = "hay window mir";
     private static final String STOP_PHRASE = "thank you window mir";
     public static final String KEY_START = "wm1";
@@ -85,11 +88,12 @@ public class SphynxService extends Service implements RecognitionListener {
         recognizer = defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
                 .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
-                        // To disable logging of raw audio comment out this call (takes a lot of space on the device)
+                // To disable logging of raw audio comment out this call (takes a lot of space on the device)
 //                .setRawLogDir(assetsDir)
-                        // Threshold to tune for keyphrase to balance between false alarms and misses
-                .setKeywordThreshold(1e-15f)
-                        // Use context-independent phonetic search, context-dependent is too slow for mobile
+                // Threshold to tune for keyphrase to balance between false alarms and misses
+                // values range from -beam (1e-50) to 1.0
+                .setKeywordThreshold(1e-10f)
+                // Use context-independent phonetic search, context-dependent is too slow for mobile
                 .setBoolean("-allphone_ci", true)
                 .getRecognizer();
         recognizer.addListener(this);
@@ -162,6 +166,11 @@ public class SphynxService extends Service implements RecognitionListener {
     }
 
     private void openMainApp(final boolean isStart) {
+        Log.d("allie", "OPEN MAIN APP");
+        // First broadcast message, then open app if needed
+        final Intent localIntent =  new Intent(isStart ? ACTION_START : ACTION_STOP);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+
         final Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
