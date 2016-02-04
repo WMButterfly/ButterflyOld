@@ -12,9 +12,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.*;
+import android.view.Display;
+import android.view.Surface;
 import com.windowmirror.android.R;
-import com.windowmirror.android.controller.dialog.SettingsDialog;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
@@ -33,13 +33,9 @@ import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
  * The Activity that starts on app launch.
  * @author alliecurry
  */
-public class MainActivity extends FragmentActivity implements EntryActionListener, View.OnTouchListener,
-        RecordListener {
+public class MainActivity extends FragmentActivity implements EntryActionListener, RecordListener {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int MAX_TAP_COUNT = 6;
     private static final int MAX_ENTRY_RETRY_QUEUE = 5;
-    private int tapCount = 0;
-    private long touchDownMs = 0;
 
     private Intent sphynxIntent;
     private int prevOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -49,7 +45,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerBroadcastReceivers();
-        findViewById(R.id.fragment_top).setOnTouchListener(this);
     }
 
     private void registerBroadcastReceivers() {
@@ -134,34 +129,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         if (fragmentBottom instanceof HistoryListFragment) {
             ((HistoryListFragment) fragmentBottom).notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_UP:
-                if ((System.currentTimeMillis() - touchDownMs) > ViewConfiguration.getTapTimeout()) {
-                    // Too long between taps... reset count
-                    tapCount = 0;
-                    break;
-                }
-
-                tapCount++;
-
-                if (tapCount == MAX_TAP_COUNT) {
-                    tapCount = 0;
-                    showServiceSettings();
-                }
-            case MotionEvent.ACTION_DOWN:
-                touchDownMs = System.currentTimeMillis();
-                break;
-        }
-        return true;
-    }
-
-    private void showServiceSettings() {
-        final SettingsDialog dialog = new SettingsDialog();
-        dialog.show(getSupportFragmentManager(), SettingsDialog.TAG);
     }
 
     @Override
