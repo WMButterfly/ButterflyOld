@@ -26,6 +26,8 @@ import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
 
+import java.util.List;
+
 /**
  * A Fragment used to record and save audio.
  * Use of this fragment requires the following two permissions:
@@ -44,6 +46,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private String audioFilePath;
     private long startTime;
 
+    private AudioRecorder audioRecorder;
     private MediaPlayer soundEffectPlayer;
 
     @Nullable
@@ -144,16 +147,15 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
     }
 
-    private AudioRecorder audioTest;
     private synchronized void startRecording(final String fileName) {
         startTime = System.currentTimeMillis();
-        audioTest = new AudioRecorder(fileName + ".wav", this);
-        audioTest.startRecording();
+        audioRecorder = new AudioRecorder(fileName + ".wav", this);
+        audioRecorder.startRecording();
     }
 
     private synchronized void stopRecording() {
         try {
-            audioTest.stopRecording();
+            audioRecorder.stopRecording();
             Log.d(TAG, "Recording created to file: " + audioFilePath);
         } catch (Exception e) {
             Log.e(TAG, e.toString());
@@ -166,7 +168,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     @Override
-    public void onAudioRecordComplete(String filePath) {
+    public void onAudioRecordComplete(String filePath, List<String> chunks) {
         final Entry entry = createEntry();
         Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
         oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);

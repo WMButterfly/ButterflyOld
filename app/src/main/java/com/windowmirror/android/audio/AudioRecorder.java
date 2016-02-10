@@ -7,6 +7,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.*;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author alliecurry
@@ -14,11 +16,14 @@ import java.io.*;
 public class AudioRecorder {
     private static final String TAG = AudioRecorder.class.getSimpleName();
     private static final String OUTPUT_FOLDER = "WindowMirror";
-    private static final String TEMP_FILE = "temp.raw";
+    private static final String TEMP_FILE = "temp";
     private static final int SAMPLE_RATE = 16000;
     private static final int RECORDER_BPP = 16; // bit depth per sample
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+
+    /** the maximum size of each file "chunk" generated, in bytes */
+    private static final long CHUNK_SIZE = 3450000; // approximately 1 minute 45 seconds
 
     private AudioRecord audioRecord = null;
     private AudioListener listener;
@@ -26,6 +31,7 @@ public class AudioRecorder {
 
     private int bufferSize = 0;
     public boolean isRecording = false;
+    private String fileNameTemp;
     private String fileNameSaved = null;
 
     public AudioRecorder(final String fileName, final AudioListener listener){
@@ -36,25 +42,27 @@ public class AudioRecorder {
 
     /** @return String full file path of the initial recorded raw file. */
     public String getTempFileName() {
+        String fileName = TEMP_FILE + new Random().nextInt(10000) + ".raw";
         String filepath = Environment.getExternalStorageDirectory().getPath();
         File file = new File(filepath, OUTPUT_FOLDER);
 
-        if(!file.exists()){
+        if (!file.exists()) {
             file.mkdirs();
         }
 
-        File tempFile = new File(filepath,TEMP_FILE);
+        File tempFile = new File(filepath, fileName);
 
-        if(tempFile.exists())
+        if (tempFile.exists()) {
             tempFile.delete();
+        }
 
-        return (file.getAbsolutePath() + "/" + TEMP_FILE);
+        return (file.getAbsolutePath() + "/" + fileName);
     }
 
 
-    public void startRecording(){
+    public void startRecording() {
         //Initialize audioRecord object with InputSource, Sample rate, number of channel, audio encoding and buffer size of output stream
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNELS, AUDIO_ENCODING, bufferSize );
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNELS, AUDIO_ENCODING, bufferSize);
         audioRecord.startRecording();
         isRecording = true;
 
@@ -69,11 +77,11 @@ public class AudioRecorder {
 
     public void writeRecordedDataToRawFile() {
         byte data[] = new byte[bufferSize];
-        String fileName = getTempFileName();
+        fileNameTemp = getTempFileName();
         FileOutputStream fos;
 
         try {
-            fos = new FileOutputStream(fileName);
+            fos = new FileOutputStream(fileNameTemp);
         } catch(FileNotFoundException e){
             Log.e(TAG, e.toString());
             if (listener != null) {
@@ -110,16 +118,18 @@ public class AudioRecorder {
             recordThread = null;
         }
 
-        saveFromTempToWavFile(getTempFileName(), fileNameSaved);
-        listener.onAudioRecordComplete(fileNameSaved);
+        saveFromTempToWavFile(fileNameTemp, fileNameSaved); // Main wav file
+        final List<String> chunks = getWavChunks(fileNameTemp, fileNameSaved); // "chunked" version
+        listener.onAudioRecordComplete(fileNameSaved, chunks);
+//        deleteTempFile();
     }
 
-    public void saveFromTempToWavFile(String tempFile, String wavFile){
+    private void saveFromTempToWavFile(String tempFile, String wavFile){
         FileInputStream fis;
         FileOutputStream fos;
 
         long totalAudioDataLen = 0;
-        long totalDataLen = totalAudioDataLen + 36;
+        long totalDataLen;
         long longSampleRate = SAMPLE_RATE;
         int numberOfChannel = 1;
         long byteRate = RECORDER_BPP*SAMPLE_RATE*numberOfChannel/8;
@@ -141,14 +151,101 @@ public class AudioRecorder {
 
             fis.close();
             fos.close();
-        }catch(FileNotFoundException e){
+        } catch (FileNotFoundException e){
             e.printStackTrace();
-        }catch(IOException e){
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    public void createWavFile(FileOutputStream fos, long totalAudioDataLen, long totalDataLen, long sampleRate, int numberOfChannel, long byteRate){
+    public List<String> getWavChunks(final String tempFile, final String wavFile) {
+        String newFileName = wavFile.substring(0, wavFile.indexOf(".wav"));
+        Log.d("allie", "NEW FILE = " + newFileName);
+        try {
+            split(tempFile, newFileName);
+        } catch (IOException e) {
+            Log.e("allie", "Error getting chunks: " + e.toString());
+        }
+        return null;
+    }
+
+    /**
+     * split the file specified by filename into pieces, each of size
+     * CHUNK_SIZE except for the last one, which may be smaller
+     */
+    private void split(final String rawFile, final String filename) throws IOException {
+        Log.d("allie", "RAW " + rawFile + " \n/-->/ " + filename);
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(rawFile));
+
+        // get the file length
+        File f = new File(rawFile);
+        long fileSize = f.length();
+
+        // loop for each full chunk
+        int subfile;
+        for (subfile = 0; subfile < fileSize / CHUNK_SIZE; subfile++) {
+            // open the output file
+            final String chunkFileName = filename + "." + subfile + ".wav";
+            final FileOutputStream fos = new FileOutputStream(chunkFileName);
+            BufferedOutputStream out = new BufferedOutputStream(fos);
+            createWavFile(fos, CHUNK_SIZE, CHUNK_SIZE + 36, SAMPLE_RATE, 1,
+                    RECORDER_BPP * SAMPLE_RATE * 1 / 8);
+            // write the right amount of bytes
+            for (int currentByte = 0; currentByte < CHUNK_SIZE; currentByte++) {
+                // load one byte from the input file and write it to the output file
+                out.write(in.read());
+            }
+
+            // close the file
+            out.close();
+
+//            int channels = 1;
+//            FileInputStream fis = new FileInputStream(chunkFileName);
+//            long dataLength = fis.getChannel().size();
+//            fis.close();
+//
+//            // Add wav header to file
+//            final FileOutputStream out2 = new FileOutputStream(chunkFileName);
+//            createWavFile(out2, dataLength, dataLength + 36, SAMPLE_RATE, channels,
+//                    RECORDER_BPP * SAMPLE_RATE * channels / 8);
+//
+//            out2.close();
+        }
+
+        // loop for the last chunk (which may be smaller than the chunk size)
+        if (fileSize != CHUNK_SIZE * (subfile - 1)) {
+            // open the output file
+            final String chunkFileName = filename + "." + subfile + ".wav";
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(chunkFileName));
+
+            // write the rest of the file
+            int b;
+            while ((b = in.read()) != -1) {
+                out.write(b);
+            }
+
+            // close the file
+            out.close();
+
+            int channels = 1;
+            FileInputStream fis = new FileInputStream(chunkFileName);
+            long dataLength = fis.getChannel().size();
+            fis.close();
+
+            // Add wav header to file
+            final FileOutputStream out2 = new FileOutputStream(chunkFileName);
+            createWavFile(out2, dataLength, dataLength + 36, SAMPLE_RATE, channels,
+                    RECORDER_BPP * SAMPLE_RATE * channels / 8);
+
+            out2.close();
+        }
+
+        // close the file
+        in.close();
+    }
+
+    private static void createWavFile(FileOutputStream fos, long totalAudioDataLen, long totalDataLen,
+                                      long sampleRate, int numberOfChannel, long byteRate){
         byte[] mWaveFileHeader = new byte[44];
 
         mWaveFileHeader[0] = 'R';
@@ -205,17 +302,20 @@ public class AudioRecorder {
         try {
             fos.write(mWaveFileHeader, 0, 44);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error writing wav header: " + e.toString());
         }
     }
 
     public void deleteTempFile() {
-        File file = new File(getTempFileName());
+        if (fileNameTemp == null || fileNameTemp.isEmpty()) {
+            return;
+        }
+        final File file = new File(fileNameTemp);
         file.delete();
     }
 
     public interface AudioListener {
         void onAudioRecordError();
-        void onAudioRecordComplete(final String filePath);
+        void onAudioRecordComplete(final String filePath, List<String> chunks);
     }
 }

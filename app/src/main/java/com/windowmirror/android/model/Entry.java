@@ -1,6 +1,7 @@
 package com.windowmirror.android.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * POJO for holding a recording and transcription data.
@@ -14,6 +15,7 @@ public class Entry implements Serializable {
     private long duration;
     private String audioFilePath;
     private String transcription;
+    private List<String> chunks;
 
     private long oxfordTimestamp; // Time in milliseconds the last time this transcription was sent to Oxford
     private OxfordStatus oxfordStatus = OxfordStatus.NONE;
@@ -77,5 +79,13 @@ public class Entry implements Serializable {
         } else {
             oxfordStatus = OxfordStatus.FAILED;
         }
+    }
+
+    public List<String> getChunks() {
+        return chunks;
+    }
+
+    public void setChunks(List<String> chunks) {
+        this.chunks = chunks;
     }
 }
