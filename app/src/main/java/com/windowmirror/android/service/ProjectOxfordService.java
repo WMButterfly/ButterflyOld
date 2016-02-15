@@ -119,6 +119,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                             transcription.updateForEmptyTranscription();
                         } else {
                             transcription.setOxfordStatus(OxfordStatus.SUCCESSFUL);
+                            deleteChunkForTranscription(transcription);
                         }
                         transcription.setText(fullTranscription);
                     }
@@ -147,6 +148,11 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 Log.v(TAG, "Audio Event: " + b);
             }
         };
+    }
+
+    private void deleteChunkForTranscription(final Transcription transcription) {
+        final File chunkFile = new File(transcription.getFilePath());
+        chunkFile.delete();
     }
 
     private void broadcastEntry() {
