@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -121,7 +122,7 @@ public class AudioRecorder {
         saveFromTempToWavFile(fileNameTemp, fileNameSaved); // Main wav file
         final List<String> chunks = getWavChunks(fileNameTemp, fileNameSaved); // "chunked" version
         listener.onAudioRecordComplete(fileNameSaved, chunks);
-//        deleteTempFile();
+        deleteTempFile();
     }
 
     private void saveFromTempToWavFile(String tempFile, String wavFile){
@@ -160,21 +161,23 @@ public class AudioRecorder {
 
     public List<String> getWavChunks(final String tempFile, final String wavFile) {
         String newFileName = wavFile.substring(0, wavFile.indexOf(".wav"));
-        Log.d("allie", "NEW FILE = " + newFileName);
         try {
-            split(tempFile, newFileName);
+            return split(tempFile, newFileName);
         } catch (IOException e) {
-            Log.e("allie", "Error getting chunks: " + e.toString());
+            Log.e(TAG, "Error getting chunks: " + e.toString());
         }
-        return null;
+        // "Chunking" failed... return only one chunk.
+        final List<String> list = new ArrayList<>();
+        list.add(wavFile);
+        return list;
     }
 
     /**
      * split the file specified by filename into pieces, each of size
      * CHUNK_SIZE except for the last one, which may be smaller
      */
-    private void split(final String rawFile, final String filename) throws IOException {
-        Log.d("allie", "RAW " + rawFile + " \n/-->/ " + filename);
+    private List<String> split(final String rawFile, final String filename) throws IOException {
+        final List<String> chunkList = new ArrayList<>();
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(rawFile));
 
         // get the file length
@@ -198,50 +201,12 @@ public class AudioRecorder {
 
             // close the file
             out.close();
-
-//            int channels = 1;
-//            FileInputStream fis = new FileInputStream(chunkFileName);
-//            long dataLength = fis.getChannel().size();
-//            fis.close();
-//
-//            // Add wav header to file
-//            final FileOutputStream out2 = new FileOutputStream(chunkFileName);
-//            createWavFile(out2, dataLength, dataLength + 36, SAMPLE_RATE, channels,
-//                    RECORDER_BPP * SAMPLE_RATE * channels / 8);
-//
-//            out2.close();
-        }
-
-        // loop for the last chunk (which may be smaller than the chunk size)
-        if (fileSize != CHUNK_SIZE * (subfile - 1)) {
-            // open the output file
-            final String chunkFileName = filename + "." + subfile + ".wav";
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(chunkFileName));
-
-            // write the rest of the file
-            int b;
-            while ((b = in.read()) != -1) {
-                out.write(b);
-            }
-
-            // close the file
-            out.close();
-
-            int channels = 1;
-            FileInputStream fis = new FileInputStream(chunkFileName);
-            long dataLength = fis.getChannel().size();
-            fis.close();
-
-            // Add wav header to file
-            final FileOutputStream out2 = new FileOutputStream(chunkFileName);
-            createWavFile(out2, dataLength, dataLength + 36, SAMPLE_RATE, channels,
-                    RECORDER_BPP * SAMPLE_RATE * channels / 8);
-
-            out2.close();
+            chunkList.add(chunkFileName);
         }
 
         // close the file
         in.close();
+        return chunkList;
     }
 
     private static void createWavFile(FileOutputStream fos, long totalAudioDataLen, long totalDataLen,

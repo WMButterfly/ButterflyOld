@@ -23,9 +23,11 @@ import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.Transcription;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -169,18 +171,23 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     @Override
     public void onAudioRecordComplete(String filePath, List<String> chunks) {
-        final Entry entry = createEntry();
+        final Entry entry = createEntry(chunks);
         Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
         oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
         getActivity().startService(oxfordIntent);
     }
 
-    private Entry createEntry() {
+    private Entry createEntry(final List<String> chunks) {
         final Entry entry = new Entry();
         final long now = System.currentTimeMillis();
         entry.setTimestamp(now);
         entry.setDuration(now - startTime);
         entry.setAudioFilePath(audioFilePath + ".wav");
+        final List<Transcription> transcriptions = new ArrayList<>();
+        for (final String chunk : chunks) {
+            transcriptions.add(new Transcription(chunk));
+        }
+        entry.setTranscriptions(transcriptions);
         if (getActivity() instanceof EntryActionListener) {
             ((EntryActionListener) getActivity()).onEntryCreated(entry);
         }

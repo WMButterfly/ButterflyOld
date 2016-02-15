@@ -71,7 +71,7 @@ public class HistoryAdapter extends ArrayAdapter<Entry> {
             }
         });
 
-        final String transcriptionStr = entry.getTranscription();
+        final String transcriptionStr = entry.getFullTranscription();
         if (transcriptionStr != null && !transcriptionStr.isEmpty()) {
             viewHolder.transcription.setText(transcriptionStr);
             final View.OnClickListener onClick = new View.OnClickListener() {

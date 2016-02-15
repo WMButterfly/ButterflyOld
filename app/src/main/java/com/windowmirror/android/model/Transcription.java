@@ -1,0 +1,57 @@
+package com.windowmirror.android.model;
+
+import java.io.Serializable;
+
+/**
+ * @author alliecurry
+ */
+public class Transcription implements Serializable {
+    private static final long serialVersionUID = 1439887695255261410L;
+    private static final int MAX_TRIES = 3;
+
+    private String filePath;
+    private String text;
+
+    private OxfordStatus oxfordStatus = OxfordStatus.NONE;
+    private int oxfordTries; // Number of tries this entry has been sent to Project Oxford
+
+    public Transcription(final String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public OxfordStatus getOxfordStatus() {
+        return oxfordStatus;
+    }
+
+    public void setOxfordStatus(OxfordStatus oxfordStatus) {
+        this.oxfordStatus = oxfordStatus;
+    }
+
+    public void incrementOxfordTries() {
+        ++oxfordTries;
+    }
+
+    public void updateForEmptyTranscription() {
+        if (oxfordTries < MAX_TRIES) {
+            oxfordStatus = OxfordStatus.REQUIRES_RETRY;
+        } else {
+            oxfordStatus = OxfordStatus.FAILED;
+        }
+    }
+}

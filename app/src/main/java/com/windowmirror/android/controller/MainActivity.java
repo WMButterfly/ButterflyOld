@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
@@ -16,7 +15,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import com.windowmirror.android.R;
-import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.controller.fragment.HistoryListFragment;
 import com.windowmirror.android.listener.EntryActionListener;
@@ -26,12 +24,8 @@ import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.service.SphynxService;
-import com.windowmirror.android.util.FileUtility;
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
-
-import java.io.File;
-import java.util.List;
 
 import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
 
@@ -51,29 +45,6 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerBroadcastReceivers();
-
-
-        String filePath = FileUtility.getDirectoryPath() + "/" + "allie-test" + ".wav";
-        final AudioRecorder audioTest = new AudioRecorder(filePath,
-                new AudioRecorder.AudioListener() {
-            @Override
-            public void onAudioRecordError() {
-                Log.e("allie", "ERROR");
-            }
-
-            @Override
-            public void onAudioRecordComplete(String filePath, List<String> chunks) {
-                Log.e("allie", "COMPLETE");
-            }
-        });
-        audioTest.getWavChunks(getTempFileName(), filePath);
-    }
-
-    public String getTempFileName() {
-        String fileName = "temp.raw";
-        String filepath = Environment.getExternalStorageDirectory().getPath();
-        File file = new File(filepath, "WindowMirror");
-        return (file.getAbsolutePath() + "/" + fileName);
     }
 
     private void registerBroadcastReceivers() {
@@ -268,10 +239,9 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         int count = 0;
         for (final Entry entry : LocalPrefs.getStoredEntries(this)) {
             if (entry.getOxfordStatus() == OxfordStatus.REQUIRES_RETRY ||
-                    (entry.getOxfordStatus() == OxfordStatus.NONE && entry.getTranscription() == null ||
-                            entry.getTranscription().isEmpty()) ||
+                    (entry.getOxfordStatus() == OxfordStatus.NONE && entry.getFullTranscription().isEmpty() ||
                     (entry.getOxfordStatus() == OxfordStatus.PENDING
-                            && System.currentTimeMillis() - entry.getTimestamp() > 300000)) {
+                            && System.currentTimeMillis() - entry.getTimestamp() > 300000))) {
                 sendEntryToOxford(entry);
                 ++count;
             }

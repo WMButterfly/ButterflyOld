@@ -9,17 +9,13 @@ import java.util.List;
  */
 public class Entry implements Serializable {
     private static final long serialVersionUID = -2365310762333427288L;
-    private static final int MAX_TRIES = 3;
 
     private long timestamp;
     private long duration;
     private String audioFilePath;
-    private String transcription;
-    private List<String> chunks;
+    private List<Transcription> transcriptions;
 
     private long oxfordTimestamp; // Time in milliseconds the last time this transcription was sent to Oxford
-    private OxfordStatus oxfordStatus = OxfordStatus.NONE;
-    private int oxfordTries; // Number of tries this entry has been sent to Project Oxford
 
     public long getTimestamp() {
         return timestamp;
@@ -45,12 +41,19 @@ public class Entry implements Serializable {
         this.audioFilePath = audioFilePath;
     }
 
-    public String getTranscription() {
-        return transcription;
-    }
-
-    public void setTranscription(String transcription) {
-        this.transcription = transcription;
+    public String getFullTranscription() {
+        if (transcriptions == null) {
+            return null;
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (final Transcription transcription : transcriptions) {
+            final String text = transcription.getText();
+            if (text != null && !text.isEmpty()) {
+                sb.append(transcription.getText());
+                sb.append(" ");
+            }
+        }
+        return sb.toString().trim();
     }
 
     public long getOxfordTimestamp() {
@@ -61,31 +64,34 @@ public class Entry implements Serializable {
         this.oxfordTimestamp = oxfordTimestamp;
     }
 
+    public List<Transcription> getTranscriptions() {
+        return transcriptions;
+    }
+
+    public void setTranscriptions(List<Transcription> transcriptions) {
+        this.transcriptions = transcriptions;
+    }
+
     public OxfordStatus getOxfordStatus() {
-        return oxfordStatus;
-    }
-
-    public void setOxfordStatus(OxfordStatus oxfordStatus) {
-        this.oxfordStatus = oxfordStatus;
-    }
-
-    public void incrementOxfordTries() {
-        ++oxfordTries;
-    }
-
-    public void updateForEmptyTranscription() {
-        if (oxfordTries < MAX_TRIES) {
-            oxfordStatus = OxfordStatus.REQUIRES_RETRY;
-        } else {
-            oxfordStatus = OxfordStatus.FAILED;
+        if (transcriptions == null || transcriptions.isEmpty()) {
+            return OxfordStatus.FAILED;
         }
-    }
 
-    public List<String> getChunks() {
-        return chunks;
-    }
-
-    public void setChunks(List<String> chunks) {
-        this.chunks = chunks;
+        boolean isFail = false;
+        for (final Transcription transcription : transcriptions) {
+            switch (transcription.getOxfordStatus()) {
+                case NONE:
+                case PENDING:
+                    return OxfordStatus.PENDING;
+                case SUCCESSFUL:
+                    break;
+                case REQUIRES_RETRY:
+                    return OxfordStatus.REQUIRES_RETRY; // At least one transcription needs to retry
+                case FAILED:
+                    isFail = true;
+                    break;
+            }
+        }
+        return isFail ? OxfordStatus.FAILED : OxfordStatus.SUCCESSFUL;
     }
 }
