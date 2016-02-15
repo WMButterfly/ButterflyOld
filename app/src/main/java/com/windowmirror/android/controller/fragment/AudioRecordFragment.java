@@ -27,6 +27,8 @@ import com.windowmirror.android.model.Transcription;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -180,12 +182,23 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private Entry createEntry(final List<String> chunks) {
         final Entry entry = new Entry();
         final long now = System.currentTimeMillis();
+        final String filePath = audioFilePath + ".wav";
         entry.setTimestamp(now);
         entry.setDuration(now - startTime);
-        entry.setAudioFilePath(audioFilePath + ".wav");
+        entry.setAudioFilePath(filePath);
         final List<Transcription> transcriptions = new ArrayList<>();
         for (final String chunk : chunks) {
             transcriptions.add(new Transcription(chunk));
+        }
+        if (transcriptions.isEmpty()) { // There was an issue with chunking
+            // ...use a copy of the main file as a chunk
+            final String chunkFile = audioFilePath + ".chunk.wav";
+            try {
+                FileUtility.copyFile(new File(filePath), new File(chunkFile));
+                transcriptions.add(new Transcription(chunkFile));
+            } catch (IOException e) {
+                Log.e(TAG, e.toString());
+            }
         }
         entry.setTranscriptions(transcriptions);
         if (getActivity() instanceof EntryActionListener) {

@@ -3,6 +3,10 @@ package com.windowmirror.android.util;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -34,8 +38,15 @@ public final class FileUtility {
 
     /** @return String to use as a file path for a new audio recording.*/
     public static String generateAudioFileName() {
-        // TODO Review and change if necessary. Could use system millis but is hard to find browse manually.
         final String uniqueName = new SimpleDateFormat("yy-MM-dd-k-m-s", Locale.US).format(new Date());
         return "audio-" + uniqueName;
+    }
+
+    public static void copyFile(final File source, final File dest) throws IOException {
+        FileChannel sourceChannel = new FileInputStream(source).getChannel();
+        FileChannel destChannel = new FileOutputStream(dest).getChannel();
+        destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+        sourceChannel.close();
+        destChannel.close();
     }
 }
