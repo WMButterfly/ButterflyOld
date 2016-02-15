@@ -9,7 +9,6 @@ import android.util.Log;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author alliecurry
@@ -17,7 +16,8 @@ import java.util.Random;
 public class AudioRecorder {
     private static final String TAG = AudioRecorder.class.getSimpleName();
     private static final String OUTPUT_FOLDER = "WindowMirror";
-    private static final String TEMP_FILE = "temp";
+    private static final String TEMP_FILE_NAME = "temp";
+    private static final String TEMP_FILE_EXT = ".raw";
     private static final int SAMPLE_RATE = 16000;
     private static final int RECORDER_BPP = 16; // bit depth per sample
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
@@ -42,22 +42,23 @@ public class AudioRecorder {
     }
 
     /** @return String full file path of the initial recorded raw file. */
-    public String getTempFileName() {
-        String fileName = TEMP_FILE + new Random().nextInt(10000) + ".raw";
-        String filepath = Environment.getExternalStorageDirectory().getPath();
-        File file = new File(filepath, OUTPUT_FOLDER);
+    private static String getTempFileName() {
+        final String outputPath = Environment.getExternalStorageDirectory().getPath();
+        final File outputFile = new File(outputPath, OUTPUT_FOLDER);
 
-        if (!file.exists()) {
-            file.mkdirs();
+        if (!outputFile.exists()) {
+            // Ensure the WindowMirror directory exists
+            outputFile.mkdirs();
         }
 
-        File tempFile = new File(filepath, fileName);
-
-        if (tempFile.exists()) {
-            tempFile.delete();
+        try { // Attempt to create a temp file
+            return File.createTempFile(TEMP_FILE_NAME, TEMP_FILE_EXT, outputFile).getAbsolutePath();
+        } catch (IOException e) {
+            Log.e(TAG, e.toString());
         }
 
-        return (file.getAbsolutePath() + "/" + fileName);
+        // Return generic temp file path
+        return outputPath + "/" + TEMP_FILE_NAME + TEMP_FILE_EXT;
     }
 
 
