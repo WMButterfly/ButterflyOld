@@ -43,9 +43,9 @@
             android:layout_alignEnd="@id/date"
             android:maxLines="2"
             android:ellipsize="end"
-            android:editable="false"
             android:inputType="none"
             android:textIsSelectable="true"
+            android:focusable="true"
             />
 
 </RelativeLayout>

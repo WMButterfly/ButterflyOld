@@ -6,14 +6,31 @@
               android:gravity="center"
         >
 
-    <!--Record Fragment Container-->
-    <fragment
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent">
+
+        <!--Record Fragment Container-->
+        <fragment
             android:name="com.windowmirror.android.controller.fragment.AudioRecordFragment"
             android:id="@+id/fragment_top"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
             />
+
+        <!--Settings Fragment Container-->
+        <fragment
+            android:name="com.windowmirror.android.controller.fragment.SettingsFragment"
+            android:id="@+id/fragment_mid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+
+    </LinearLayout>
 
     <!--History Fragment Container-->
     <fragment

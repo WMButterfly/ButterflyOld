@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,8 +23,14 @@ import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.Transcription;
 import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.util.FileUtility;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Fragment used to record and save audio.
@@ -43,6 +50,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private String audioFilePath;
     private long startTime;
 
+    private AudioRecorder audioRecorder;
     private MediaPlayer soundEffectPlayer;
 
     @Nullable
@@ -100,7 +108,8 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         return true;
     }
 
-    public void toggleRecording() {
+    /** @return true if the recording is now set to begin */
+    public boolean toggleRecording() {
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();
@@ -112,6 +121,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             playSoundEffect(onSoundEffectComplete);
         }
         isRecording = !isRecording;
+        return isRecording;
     }
 
     private MediaPlayer.OnCompletionListener onSoundEffectComplete = new MediaPlayer.OnCompletionListener() {
@@ -124,7 +134,12 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
                 ((RecordListener) getActivity()).onRecordStart();
             }
 
-            startRecording(audioFilePath);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startRecording(audioFilePath);
+                }
+            }, 250);
         }
     };
 
@@ -136,16 +151,15 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
     }
 
-    private AudioRecorder audioTest;
     private synchronized void startRecording(final String fileName) {
         startTime = System.currentTimeMillis();
-        audioTest = new AudioRecorder(fileName + ".wav", this);
-        audioTest.startRecording();
+        audioRecorder = new AudioRecorder(fileName + ".wav", this);
+        audioRecorder.startRecording();
     }
 
     private synchronized void stopRecording() {
         try {
-            audioTest.stopRecording();
+            audioRecorder.stopRecording();
             Log.d(TAG, "Recording created to file: " + audioFilePath);
         } catch (Exception e) {
             Log.e(TAG, e.toString());
@@ -158,19 +172,35 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     @Override
-    public void onAudioRecordComplete(String filePath) {
-        final Entry entry = createEntry();
+    public void onAudioRecordComplete(String filePath, List<String> chunks) {
+        final Entry entry = createEntry(chunks);
         Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
         oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
         getActivity().startService(oxfordIntent);
     }
 
-    private Entry createEntry() {
+    private Entry createEntry(final List<String> chunks) {
         final Entry entry = new Entry();
         final long now = System.currentTimeMillis();
+        final String filePath = audioFilePath + ".wav";
         entry.setTimestamp(now);
         entry.setDuration(now - startTime);
-        entry.setAudioFilePath(audioFilePath + ".wav");
+        entry.setAudioFilePath(filePath);
+        final List<Transcription> transcriptions = new ArrayList<>();
+        for (final String chunk : chunks) {
+            transcriptions.add(new Transcription(chunk));
+        }
+        if (transcriptions.isEmpty()) { // There was an issue with chunking
+            // ...use a copy of the main file as a chunk
+            final String chunkFile = audioFilePath + ".chunk.wav";
+            try {
+                FileUtility.copyFile(new File(filePath), new File(chunkFile));
+                transcriptions.add(new Transcription(chunkFile));
+            } catch (IOException e) {
+                Log.e(TAG, e.toString());
+            }
+        }
+        entry.setTranscriptions(transcriptions);
         if (getActivity() instanceof EntryActionListener) {
             ((EntryActionListener) getActivity()).onEntryCreated(entry);
         }

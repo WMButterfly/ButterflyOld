@@ -6,6 +6,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.microsoft.projectoxford.speechrecognition.*;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.OxfordStatus;
+import com.windowmirror.android.model.Transcription;
 import com.windowmirror.android.util.LocalPrefs;
 
 import java.io.File;
@@ -27,25 +29,47 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
     @Override
     protected void onHandleIntent(Intent intent) {
         entry = (Entry) intent.getSerializableExtra(KEY_ENTRY);
-        if (entry != null) {
-            processNewFile(entry.getAudioFilePath());
+        if (entry != null && entry.getTranscriptions() != null) {
+            entry.setOxfordTimestamp(System.currentTimeMillis());
+
+            for (final Transcription transcription : entry.getTranscriptions()) {
+                if (transcription.getOxfordStatus() == OxfordStatus.SUCCESSFUL
+                        || transcription.getOxfordStatus() == OxfordStatus.FAILED) {
+                    continue; // We only want to send new transcriptions or those marked for retry
+                }
+
+                transcription.setOxfordStatus(OxfordStatus.PENDING);
+                transcription.incrementOxfordTries();
+
+                final boolean success = processNewFile(transcription.getFilePath(),
+                        getListenerForTranscription(transcription));
+
+                if (!success) {
+                    transcription.setOxfordStatus(OxfordStatus.FAILED);
+                    broadcastEntry();
+                }
+            }
         } else {
             Log.e(TAG, "IntentService cannot process null Entry");
         }
     }
 
-    public void processNewFile(String filename) {
+    public synchronized boolean processNewFile(final String filename,
+                                            final ISpeechRecognitionServerEvents listener) {
         final DataRecognitionClient client = SpeechRecognitionServiceFactory.createDataClient(
                 SpeechRecognitionMode.LongDictation,
                 "en_us",
-                ProjectOxfordService.this,
+                listener,
                 "00c3a2a047cb4085831e5d1cc483af22");
         try {
             File audioFile = new File(filename);
+
+            if (!audioFile.exists() || audioFile.length() == 0) {
+                return false;
+            }
+
             InputStream fileStream = new FileInputStream(audioFile);
-//            File audioFile = new File("/storage/emulated/0/WindowMirror/whatstheweatherlike.wav");
-//            InputStream fileStream = getAssets().open("whatstheweatherlike.wav");
-            int bytesRead = 0;
+            int bytesRead;
             byte[] buffer = new byte[1024];
 
             do {
@@ -59,10 +83,11 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
             } while (bytesRead > 0);
         } catch (IOException ex) {
             Log.e(TAG, ex.toString());
+            return false;
         } finally {
             client.endAudio();
         }
-
+        return true;
     }
 
     @Override
@@ -71,21 +96,68 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
 
     @Override
     public void onFinalResponseReceived(RecognitionResult recognitionResult) {
-        Log.v(TAG, "Response received!");
-        if (recognitionResult != null && recognitionResult.Results != null
-                && recognitionResult.Results.length > 0) {
-            final String transcription = recognitionResult.Results[0].DisplayText;
-            Log.v(TAG, "Transcription Result: " + transcription);
-            if (entry != null) {
-                String oldTranscription = entry.getTranscription();
-                if (oldTranscription == null) {
-                    oldTranscription = "";
-                } else { // Adding a space between new and old transcription.
-                    oldTranscription += " ";
+    }
+
+    private ISpeechRecognitionServerEvents getListenerForTranscription(final Transcription transcription) {
+        return new ISpeechRecognitionServerEvents() {
+            @Override
+            public void onFinalResponseReceived(RecognitionResult recognitionResult) {
+                Log.v(TAG, "Response received!");
+                if (recognitionResult != null && recognitionResult.Results != null
+                        && recognitionResult.Results.length > 0) {
+                    final String text = recognitionResult.Results[0].DisplayText;
+                    Log.v(TAG, "Transcription Result: " + text);
+                    if (text != null) {
+                        String oldTranscription = transcription.getText();
+                        if (oldTranscription == null) {
+                            oldTranscription = "";
+                        } else { // Adding a space between new and old transcription.
+                            oldTranscription += " ";
+                        }
+                        final String fullTranscription = oldTranscription + text;
+                        if (fullTranscription.trim().isEmpty()) {
+                            transcription.updateForEmptyTranscription();
+                        } else {
+                            transcription.setOxfordStatus(OxfordStatus.SUCCESSFUL);
+                            deleteChunkForTranscription(transcription);
+                        }
+                        transcription.setText(fullTranscription);
+                    }
                 }
-                entry.setTranscription(oldTranscription + transcription);
-                LocalPrefs.updateEntry(this, entry);
+                transcription.updateForEmptyTranscription();
+                broadcastEntry();
             }
+
+            @Override
+            public void onPartialResponseReceived(String s) {
+            }
+
+            @Override
+            public void onIntentReceived(String s) {
+            }
+
+            @Override
+            public void onError(int i, String s) {
+                Log.e(TAG, "Error: " + i + ": " + s);
+                transcription.updateForEmptyTranscription();
+                broadcastEntry();
+            }
+
+            @Override
+            public void onAudioEvent(boolean b) {
+                Log.v(TAG, "Audio Event: " + b);
+            }
+        };
+    }
+
+    private void deleteChunkForTranscription(final Transcription transcription) {
+        final File chunkFile = new File(transcription.getFilePath());
+        chunkFile.delete();
+    }
+
+    private void broadcastEntry() {
+        if (entry != null) {
+            LocalPrefs.updateEntry(this, entry);
             final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
@@ -98,6 +170,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
     @Override
     public void onError(int i, String s) {
         Log.e(TAG, "Error: " + i + ": " + s);
+        broadcastEntry();
     }
 
     @Override

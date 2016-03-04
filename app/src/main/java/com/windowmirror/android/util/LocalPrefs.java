@@ -88,7 +88,7 @@ public final class LocalPrefs {
         boolean updated = false;
         for (final Entry e : HISTORY) {
             if (entry.getTimestamp() == e.getTimestamp()) {
-                e.setTranscription(entry.getTranscription());
+                e.setTranscriptions(entry.getTranscriptions());
                 updated = true;
                 break;
             }
