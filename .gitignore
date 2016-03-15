@@ -26,3 +26,11 @@ proguard/
 # Log Files
 *.log
 *.md5
+
+# Android Studio / IntelliJ IDEA 
+*.iws
+.idea/libraries
+.idea/tasks.xml
+.idea/vcs.xml
+.idea/workspace.xml
+
