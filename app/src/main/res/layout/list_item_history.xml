@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="@drawable/card_background"
+          android:padding="@dimen/list_item_padding"
+        >
+
+    <TextView
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@android:drawable/ic_media_play"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            />
+
+    <TextView
+            android:id="@+id/date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/play"
+            android:layout_toStartOf="@id/play"
+            android:textSize="16sp"
+            android:textColor="@android:color/primary_text_light"
+            />
+
+    <EditText
+            android:id="@+id/transcription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/tertiary_text_light"
+            android:textSize="14sp"
+            android:background="@null"
+            android:layout_below="@id/date"
+            android:layout_alignLeft="@id/date"
+            android:layout_alignStart="@id/date"
+            android:layout_alignRight="@id/date"
+            android:layout_alignEnd="@id/date"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:inputType="none"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            />
+
+</RelativeLayout>
