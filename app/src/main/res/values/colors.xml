@@ -2,7 +2,13 @@
 <resources>
 
     <color name="lilac">#F5EBFD</color>
-    <color name="royal">#603F81</color>
-    <color name="royal_light">#22603F81</color>
+    <color name="royal">#673AB7</color>
+    <color name="royal_dark">#522e92</color>
+    <color name="royal_light">#22673AB7</color>
+
+    <color name="primary_color">@android:color/white</color>
+    <color name="primary_color_dark">#AAAAAA</color>
+    <color name="accent_color">@color/royal</color>
+    <color name="accent_color_dark">@color/royal_dark</color>
 
 </resources>

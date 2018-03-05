@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">WindowMirror</string>
 
     <string name="record_start">Start Recording</string>
     <string name="record_stop">Stop Recording</string>
@@ -18,5 +17,9 @@
         closed.
     </string>
     <string name="save">Save</string>
+    <string name="login_opening_message">WindowMirror’s Butterfly lets you create content in an instant!</string>
+    <string name="login_button_label">Sign Up / Login</string>
+    <string name="trademark1">Butterfly is a registered trademark of\nWindowMirror Inc. registered in USA</string>
+    <string name="copyright">© 2018 WindowMirror Inc.</string>
 
 </resources>

@@ -3,5 +3,7 @@
 
     <dimen name="mic_stroke">6dp</dimen>
     <dimen name="list_item_padding">16dp</dimen>
+    
+    <dimen name="button_radius">8dp</dimen>
 
 </resources>

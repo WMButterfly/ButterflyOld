@@ -30,7 +30,7 @@ import com.windowmirror.android.util.NetworkUtility;
 import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
 
 /**
- * The Activity that starts on app launch.
+ * The Activity which controls all views for authenticated users
  * @author alliecurry
  */
 public class MainActivity extends FragmentActivity implements EntryActionListener, RecordListener {

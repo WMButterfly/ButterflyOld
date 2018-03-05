@@ -22,6 +22,7 @@ android {
 
     defaultConfig {
         applicationId "com.windowmirror.android"
+        resValue "string", "app_name", "Butterfly"
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 7
