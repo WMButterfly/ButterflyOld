@@ -28,6 +28,7 @@ android {
         versionCode 7
         versionName "2.0"
 
+        buildConfigField 'String', 'API_URL', "\"${props.apiUrl}\""
         buildConfigField 'String', 'SPEECH_SUBSCRIPTION_KEY', "\"${props.speechKey}\""
 
         // Auth0 Configuration
@@ -58,10 +59,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':aars')
     implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.google.guava:guava:24.0-android'
     implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'
     implementation 'com.auth0.android:auth0:1.12.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.8.1'
 }
 
 ant.importBuild 'assets.xml'

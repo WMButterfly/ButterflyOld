@@ -14,6 +14,7 @@ The top directory of this app should contain a `local.properties` file after imp
 The following key/values MUST be added to this file for the project to run:
 
 ```
+apiUrl=https://BACKEND_URL
 speechKey=MISCROSOFT_SPEECH_KEY_HERE
 auth0ClientId=AUTH0_CLIENT_ID
 auth0Domain=AUTH0_DOMAIN
