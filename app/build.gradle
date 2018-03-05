@@ -29,6 +29,11 @@ android {
 
         buildConfigField 'String', 'SPEECH_SUBSCRIPTION_KEY', "\"${props.speechKey}\""
 
+        // Auth0 Configuration
+        manifestPlaceholders = [auth0Domain: "${props.auth0Domain}", auth0Scheme: "https"]
+        resValue "string", "com_auth0_client_id", "\"${props.auth0ClientId}\""
+        resValue "string", "com_auth0_domain", "\"${props.auth0Domain}\""
+
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
         }
@@ -52,8 +57,9 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':aars')
     implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'
     implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'
+    implementation 'com.auth0.android:auth0:1.12.1'
 }
 
 ant.importBuild 'assets.xml'
