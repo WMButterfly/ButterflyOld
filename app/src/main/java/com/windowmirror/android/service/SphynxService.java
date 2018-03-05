@@ -3,18 +3,24 @@ package com.windowmirror.android.service;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.os.*;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
 import com.windowmirror.android.controller.MainActivity;
+
+import java.io.File;
+import java.io.IOException;
+
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
-
-import java.io.File;
-import java.io.IOException;
 
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
@@ -26,8 +32,8 @@ public class SphynxService extends Service implements RecognitionListener {
     private static final String TAG = SphynxService.class.getSimpleName();
     public static final String ACTION_START = "wmstart";
     public static final String ACTION_STOP = "wmstop";
-    private static final String START_PHRASE = "hay window mir";
-    private static final String STOP_PHRASE = "thank you window mir";
+    private static final String START_PHRASE = "hay butterfly";
+    private static final String STOP_PHRASE = "thank you butterfly";
     public static final String KEY_START = "wm1";
     public static final String KEY_STOP = "wm2";
     private SpeechRecognizer recognizer;
