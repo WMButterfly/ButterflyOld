@@ -1,31 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:background="@drawable/card_background"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center"
-        >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/card_background"
+    android:gravity="center">
 
     <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp"
-            android:src="@drawable/wm"
-            android:layout_centerInParent="true"
-            android:scaleType="centerInside"
-            android:alpha="0.1"
-            />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:alpha="0.1"
+        android:padding="16dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/wm" />
 
     <ImageView
-            android:id="@+id/button_record"
-            android:layout_width="130dp"
-            android:layout_height="130dp"
-            android:padding="20dp"
-            android:background="@drawable/mic_background"
-            android:src="@drawable/mic"
-            android:textColor="@android:color/white"
-            android:contentDescription="@string/record_start"
-            android:layout_centerInParent="true"
-            />
+        android:id="@+id/button_record"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/mic_background"
+        android:contentDescription="@string/record_start"
+        android:padding="20dp"
+        android:src="@drawable/mic"
+        android:textColor="@android:color/white" />
+
+    <view.AudioVisualizerView
+        android:id="@+id/visualizer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
 
 </RelativeLayout>

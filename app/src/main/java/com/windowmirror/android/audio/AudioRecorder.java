@@ -6,9 +6,17 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import view.AudioVisualizerView;
 
 /**
  * @author alliecurry
@@ -35,10 +43,16 @@ public class AudioRecorder {
     private String fileNameTemp;
     private String fileNameSaved = null;
 
+    private AudioVisualizerView visualizer;
+
     public AudioRecorder(final String fileName, final AudioListener listener){
         bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNELS, AUDIO_ENCODING);
         fileNameSaved = fileName;
         this.listener = listener;
+    }
+
+    public void setVisualizer(AudioVisualizerView visualizer) {
+        this.visualizer = visualizer;
     }
 
     /** @return String full file path of the initial recorded raw file. */
@@ -100,6 +114,9 @@ public class AudioRecorder {
                     fos.write(data);
                 } catch(IOException e) {
                     Log.e(TAG, e.toString());
+                }
+                if (visualizer != null) {
+                    visualizer.onNewData(data);
                 }
             }
         }

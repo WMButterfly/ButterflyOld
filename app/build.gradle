@@ -59,6 +59,7 @@ dependencies {
     implementation project(':aars')
     implementation 'com.android.support:appcompat-v7:27.1.0'
     implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.guava:guava:24.0-android'
     implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'
     implementation 'com.auth0.android:auth0:1.12.1'
 }

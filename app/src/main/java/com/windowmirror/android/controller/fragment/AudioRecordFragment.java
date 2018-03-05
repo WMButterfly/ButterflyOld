@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import view.AudioVisualizerView;
+
 /**
  * A Fragment used to record and save audio.
  * Use of this fragment requires the following two permissions:
@@ -52,10 +54,11 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
     private AudioRecorder audioRecorder;
     private MediaPlayer soundEffectPlayer;
+    private AudioVisualizerView visualizer;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View layout = inflater.inflate(R.layout.fragment_record, container, false);
         final boolean isAccepted = checkPermissions();
         if (isAccepted) {
@@ -64,7 +67,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
         }
 
         // Initialize record button listener
-        recordButton = (ImageView) layout.findViewById(R.id.button_record);
+        recordButton = layout.findViewById(R.id.button_record);
         recordButton.setColorFilter(getResources().getColor(R.color.royal), PorterDuff.Mode.SRC_ATOP);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +76,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             }
         });
 
+        visualizer = layout.findViewById(R.id.visualizer);
         return layout;
     }
 
@@ -154,6 +158,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private synchronized void startRecording(final String fileName) {
         startTime = System.currentTimeMillis();
         audioRecorder = new AudioRecorder(fileName + ".wav", this);
+        audioRecorder.setVisualizer(visualizer);
         audioRecorder.startRecording();
     }
 
