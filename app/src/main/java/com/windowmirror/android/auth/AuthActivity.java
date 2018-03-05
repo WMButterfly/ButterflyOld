@@ -21,6 +21,7 @@ import com.windowmirror.android.controller.MainActivity;
  * Activity used when the user needs to authenticate.
  */
 public class AuthActivity extends Activity implements AuthCallback {
+    private static final String AUTH0_SCOPE = "write:recording read:recording openid profile email offline_access";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class AuthActivity extends Activity implements AuthCallback {
         Auth0 auth0 = new Auth0(this);
         auth0.setOIDCConformant(true);
         WebAuthProvider.init(auth0)
+                .withScope(AUTH0_SCOPE)
                 .start(this, this);
     }
 
