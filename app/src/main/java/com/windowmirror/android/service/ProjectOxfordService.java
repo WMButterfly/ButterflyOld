@@ -4,7 +4,13 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import com.microsoft.projectoxford.speechrecognition.*;
+
+import com.microsoft.cognitiveservices.speechrecognition.DataRecognitionClient;
+import com.microsoft.cognitiveservices.speechrecognition.ISpeechRecognitionServerEvents;
+import com.microsoft.cognitiveservices.speechrecognition.RecognitionResult;
+import com.microsoft.cognitiveservices.speechrecognition.SpeechRecognitionMode;
+import com.microsoft.cognitiveservices.speechrecognition.SpeechRecognitionServiceFactory;
+import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.model.Transcription;
@@ -60,7 +66,7 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
                 SpeechRecognitionMode.LongDictation,
                 "en_us",
                 listener,
-                "00c3a2a047cb4085831e5d1cc483af22");
+                BuildConfig.SPEECH_SUBSCRIPTION_KEY);
         try {
             File audioFile = new File(filename);
 
