@@ -11,7 +11,12 @@ import com.google.gson.GsonBuilder;
 import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.util.LocalPrefs;
 
+import java.io.IOException;
+
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -49,6 +54,7 @@ public final class BackendService {
 
         final OkHttpClient httpClient = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
+                .addInterceptor(getAuthInterceptor())
                 .build();
 
         final Retrofit retrofit = new Retrofit.Builder()
@@ -58,6 +64,20 @@ public final class BackendService {
                 .build();
 
         mApi = retrofit.create(BackendApi.class);
+    }
+
+    private Interceptor getAuthInterceptor() {
+        return new Interceptor() {
+            @Override
+            public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
+                Request original = chain.request();
+                Request request = original.newBuilder()
+                        .header("Authorization", "Bearer " + (sCredentials == null ? "" : sCredentials.getAccessToken()))
+                        .method(original.method(), original.body())
+                        .build();
+                return chain.proceed(request);
+            }
+        };
     }
 
     private GsonConverterFactory getGsonFactory() {
