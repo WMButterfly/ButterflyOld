@@ -14,9 +14,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
+
 import com.windowmirror.android.R;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
-import com.windowmirror.android.controller.fragment.HistoryListFragment;
+import com.windowmirror.android.feed.FeedFragment;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
@@ -26,6 +27,8 @@ import com.windowmirror.android.service.ProjectOxfordService;
 import com.windowmirror.android.service.SphynxService;
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
+
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
 
@@ -45,6 +48,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerBroadcastReceivers();
+        JodaTimeAndroid.init(this);
     }
 
     private void registerBroadcastReceivers() {
@@ -118,16 +122,16 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     public void onEntryCreated(Entry entry) {
         LocalPrefs.addEntry(this, entry);
         final Fragment fragmentBottom = getSupportFragmentManager().findFragmentById(R.id.fragment_bottom);
-        if (fragmentBottom instanceof HistoryListFragment) {
-            ((HistoryListFragment) fragmentBottom).addEntry(entry);
+        if (fragmentBottom instanceof FeedFragment) {
+            ((FeedFragment) fragmentBottom).addEntry(entry);
         }
     }
 
     @Override
     public void onEntryUpdated(Entry entry) {
         final Fragment fragmentBottom = getSupportFragmentManager().findFragmentById(R.id.fragment_bottom);
-        if (fragmentBottom instanceof HistoryListFragment) {
-            ((HistoryListFragment) fragmentBottom).notifyDataSetChanged();
+        if (fragmentBottom instanceof FeedFragment) {
+            ((FeedFragment) fragmentBottom).notifyDataSetChanged();
         }
     }
 

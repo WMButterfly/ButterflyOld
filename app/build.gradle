@@ -59,6 +59,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':aars')
     implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.android.support:recyclerview-v7:27.1.0'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.google.guava:guava:24.0-android'
     implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'
@@ -66,6 +67,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.1'
+    implementation 'net.danlew:android.joda:2.9.9.2'
 }
 
 ant.importBuild 'assets.xml'

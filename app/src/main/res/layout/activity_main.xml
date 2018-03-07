@@ -25,7 +25,7 @@
 
     <!--History Fragment Container-->
     <fragment
-            android:name="com.windowmirror.android.controller.fragment.HistoryListFragment"
+            android:name="com.windowmirror.android.feed.FeedFragment"
             android:id="@+id/fragment_bottom"
             android:layout_width="match_parent"
             android:layout_height="0dp"

@@ -1,51 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-          android:orientation="horizontal"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:background="@drawable/card_background"
-          android:padding="@dimen/list_item_padding"
-        >
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:background="@android:color/white">
 
-    <TextView
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/date_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/length"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:drawableTop="@android:drawable/ic_media_play"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            />
+            android:layout_weight="2"
+            android:textColor="@color/primary_color_dark_alpha_80"
+            android:textSize="12sp"
+            tools:text="2:23:26" />
 
-    <TextView
+        <android.support.v7.widget.AppCompatTextView
             android:id="@+id/date"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/play"
-            android:layout_toStartOf="@id/play"
-            android:textSize="16sp"
-            android:textColor="@android:color/primary_text_light"
-            />
+            android:layout_weight="3"
+            android:textColor="@color/primary_color_dark_alpha_80"
+            android:textSize="12sp"
+            tools:text="January 20, 2018" />
 
-    <EditText
-            android:id="@+id/transcription"
-            android:layout_width="match_parent"
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/time"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/tertiary_text_light"
-            android:textSize="14sp"
-            android:background="@null"
-            android:layout_below="@id/date"
-            android:layout_alignLeft="@id/date"
-            android:layout_alignStart="@id/date"
-            android:layout_alignRight="@id/date"
-            android:layout_alignEnd="@id/date"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:inputType="none"
-            android:textIsSelectable="true"
-            android:focusable="true"
-            />
+            android:layout_weight="2"
+            android:textColor="@color/primary_color_dark_alpha_80"
+            android:textSize="12sp"
+            tools:text="8:48pm" />
 
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/play"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_media_play" />
+
+
+    </LinearLayout>
+
+    <android.support.v7.widget.AppCompatEditText
+        android:id="@+id/transcription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/date_header"
+        android:background="@drawable/bg_feed_item"
+        android:ellipsize="end"
+        android:focusable="true"
+        android:inputType="none"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="6"
+        android:padding="8dp"
+        android:textColor="@color/primary_color_dark_alpha_80"
+        android:textIsSelectable="true"
+        android:textSize="12sp"
+        tools:text="The night watchmen overhear Borachio bragging about his crime. Dogberry and Verges, the heads of the local police, ultimately arrest both Borachio and Conrad, another of Don John’s followers. Leonato tells Claudio that, as punishment, he wants Claudio to tell everybody in the city how innocent Hero was. He also wants Claudio to marry Leonato’s “niece”—" />
 </RelativeLayout>
