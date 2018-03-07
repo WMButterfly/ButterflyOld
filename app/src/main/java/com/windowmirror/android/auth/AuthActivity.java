@@ -16,6 +16,7 @@ import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import com.windowmirror.android.R;
 import com.windowmirror.android.controller.MainActivity;
+import com.windowmirror.android.service.BackendService;
 
 /**
  * Activity used when the user needs to authenticate.
@@ -57,7 +58,8 @@ public class AuthActivity extends Activity implements AuthCallback {
 
     @Override
     public void onSuccess(@NonNull Credentials credentials) {
-        // TODO store credentials
+        BackendService.setCredentials(this, credentials);
         startActivity(new Intent(this, MainActivity.class));
+        finish();
     }
 }

@@ -2,7 +2,11 @@ package com.windowmirror.android.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.auth0.android.result.Credentials;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,6 +26,7 @@ public final class LocalPrefs {
     private static final String PREFS_NAME = "wmprefs";
     private static final String KEY_ENTRIES = "wments";
     private static final String KEY_BACKGROUND_SERVICE = "bgsphynx";
+    private static final String KEY_CREDENTIALS = "auth0creds";
 
     /** Local copy of History List as not to cause slow-down.
      * Should be saved when app is closed.
@@ -44,9 +49,26 @@ public final class LocalPrefs {
         getPrefs(context)
                 .edit()
                 .putBoolean(KEY_BACKGROUND_SERVICE, run)
-                .commit();
+                .apply();
     }
 
+    @Nullable
+    public static Credentials getCredentials(final Context context) {
+        final String jsonString = getPrefs(context).getString(KEY_CREDENTIALS, "{}");
+        try {
+            return getDefaultGson().fromJson(jsonString, Credentials.class);
+        } catch (final JsonSyntaxException e) {
+            Log.e("LocalPrefs", "Could not retrieve stored JSON: " + e.toString());
+        }
+        return null;
+    }
+
+    public static void setCredentials(final Context context, final Credentials credentials) {
+        final String jsonString = getDefaultGson().toJson(credentials);
+        getPrefs(context).edit().putString(KEY_CREDENTIALS, jsonString).apply();
+    }
+
+    @NonNull
     public static List<Entry> getStoredEntries(final Context context) {
         if (HISTORY != null) {
             return HISTORY;

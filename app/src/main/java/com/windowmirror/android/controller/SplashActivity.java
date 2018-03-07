@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
+import com.windowmirror.android.service.BackendService;
 
 /**
  * Activity used to determine whether the user has authentication.
@@ -31,11 +32,11 @@ public final class SplashActivity extends Activity {
     }
 
     private void checkAuth() {
-        boolean isAuthenticated = false; // TODO
-        if (isAuthenticated) {
+        if (BackendService.hasCredentials(this)) {
             startActivity(new Intent(this, MainActivity.class));
         } else {
             startActivity(new Intent(this, AuthActivity.class));
         }
+        finish();
     }
 }
