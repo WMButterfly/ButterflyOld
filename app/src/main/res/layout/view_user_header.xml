@@ -5,4 +5,7 @@
     android:layout_height="match_parent"
     tools:parentTag="android.widget.RelativeLayout">
 
+    <!--TODO add views for user info ?-->
+    <!--Unless we are using this area for audio files-->
+
 </merge>

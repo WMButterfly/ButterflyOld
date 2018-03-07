@@ -44,24 +44,14 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@android:drawable/ic_media_play" />
-
-
     </LinearLayout>
 
-    <android.support.v7.widget.AppCompatEditText
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/transcription"
+        style="@style/TranscriptionText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/date_header"
-        android:background="@drawable/bg_feed_item"
-        android:ellipsize="end"
-        android:focusable="true"
-        android:inputType="none"
-        android:lineSpacingMultiplier="1.2"
         android:maxLines="6"
-        android:padding="8dp"
-        android:textColor="@color/primary_color_dark_alpha_80"
-        android:textIsSelectable="true"
-        android:textSize="12sp"
         tools:text="The night watchmen overhear Borachio bragging about his crime. Dogberry and Verges, the heads of the local police, ultimately arrest both Borachio and Conrad, another of Don John’s followers. Leonato tells Claudio that, as punishment, he wants Claudio to tell everybody in the city how innocent Hero was. He also wants Claudio to marry Leonato’s “niece”—" />
 </RelativeLayout>

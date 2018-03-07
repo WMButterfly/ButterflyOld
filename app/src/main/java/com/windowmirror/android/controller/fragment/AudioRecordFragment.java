@@ -122,7 +122,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     }
 
     /** @return true if the recording is now set to begin */
-    public boolean toggleRecording() {
+    public synchronized boolean toggleRecording() {
         if (isRecording) {
             recordButton.setSelected(false);
             stopRecording();

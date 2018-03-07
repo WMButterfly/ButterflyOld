@@ -19,6 +19,11 @@ public class Transcription implements Serializable {
         this.filePath = filePath;
     }
 
+    public Transcription(final String filePath, final String text) {
+        this.filePath = filePath;
+        this.text = text;
+    }
+
     public String getFilePath() {
         return filePath;
     }

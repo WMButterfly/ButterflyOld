@@ -19,4 +19,14 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="TranscriptionText">
+        <item name="android:background">@drawable/bg_feed_item</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:focusable">true</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:textColor">@color/primary_color_dark_alpha_80</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
 </resources>

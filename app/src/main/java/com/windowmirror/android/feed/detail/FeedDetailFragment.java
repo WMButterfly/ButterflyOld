@@ -1,0 +1,116 @@
+package com.windowmirror.android.feed.detail;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.text.InputType;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.windowmirror.android.R;
+import com.windowmirror.android.listener.NavigationListener;
+import com.windowmirror.android.model.Entry;
+
+import view.ViewUtility;
+import view.navigation.ButterflyToolbar;
+
+import static com.windowmirror.android.model.OxfordStatus.SUCCESSFUL;
+
+/**
+ * Displays full transcription.
+ */
+public class FeedDetailFragment extends Fragment {
+    private static final String KEY_ENTRY = "k_e";
+    private Entry mEntry;
+
+    private EditText mTranscriptionView;
+    private TextView mDuration;
+    private TextView mDate;
+    private TextView mTime;
+    private View mShareButton;
+
+    private boolean mCanEdit;
+
+    public static FeedDetailFragment create(@NonNull Entry entry) {
+        FeedDetailFragment fragment = new FeedDetailFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(KEY_ENTRY, entry);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View layout = inflater.inflate(R.layout.fragment_feed_detail, container, false);
+        if (mEntry == null && getArguments() != null) {
+            mEntry = (Entry) getArguments().getSerializable(KEY_ENTRY);
+        }
+        mTranscriptionView = layout.findViewById(R.id.transcription);
+        mDuration = layout.findViewById(R.id.length);
+        mDate = layout.findViewById(R.id.date);
+        mTime = layout.findViewById(R.id.time);
+        mShareButton = layout.findViewById(R.id.share);
+        displayEntry();
+        mShareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onShareClick();
+            }
+        });
+        return layout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof NavigationListener) {
+            ((NavigationListener) getActivity()).showToolbar(true);
+            ((NavigationListener) getActivity()).setToolbarState(ButterflyToolbar.State.PAGE_UP);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        saveEntryChanges();
+    }
+
+    private void displayEntry() {
+        if (mEntry == null) {
+            mTranscriptionView.setText(R.string.entry_not_found);
+            return;
+        }
+        mCanEdit = mEntry.getOxfordStatus() == SUCCESSFUL;
+        mTranscriptionView.setFocusable(mCanEdit);
+        mTranscriptionView.setEnabled(mCanEdit);
+        mTranscriptionView.setInputType(mCanEdit ? InputType.TYPE_TEXT_FLAG_CAP_SENTENCES : InputType.TYPE_NULL);
+        String transcriptionStr = mEntry.getFullTranscription();
+        if (transcriptionStr != null && !transcriptionStr.isEmpty()) {
+            mTranscriptionView.setText(transcriptionStr);
+        } else {
+            mTranscriptionView.setText(ViewUtility.getMessageForStatus(getContext(), mEntry.getOxfordStatus()));
+        }
+        mDate.setText(ViewUtility.formatDate(mEntry.getTimestamp()));
+        mTime.setText(ViewUtility.formatTime(mEntry.getTimestamp()));
+        mDuration.setText(ViewUtility.formatDuration(mEntry.getDuration()));
+    }
+
+    private void onShareClick() {
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, mTranscriptionView.getText().toString());
+        startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_title)));
+    }
+
+    private void saveEntryChanges() {
+        if (mCanEdit) {
+            mEntry.setFullTranscription(mTranscriptionView.getText().toString());
+        }
+    }
+}

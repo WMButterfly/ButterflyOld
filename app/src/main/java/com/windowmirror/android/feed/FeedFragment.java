@@ -21,8 +21,12 @@ import com.windowmirror.android.util.LocalPrefs;
 
 import java.util.ArrayList;
 
+import view.SpacesItemDecoration;
+import view.navigation.ButterflyToolbar;
+
 /**
  * Fragment used to display and play previous recordings.
+ *
  * @author alliecurry
  */
 public class FeedFragment extends Fragment implements FeedAdapter.Listener {
@@ -37,10 +41,14 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View layout = inflater.inflate(R.layout.fragment_history, container, false);
-        adapter = new FeedAdapter(this);
-        adapter.setEntries(new ArrayList<>(LocalPrefs.getStoredEntries(getActivity())));
+        if (adapter == null) {
+            adapter = new FeedAdapter(this);
+            adapter.setEntries(new ArrayList<>(LocalPrefs.getStoredEntries(getActivity())));
+        }
         if (layout instanceof RecyclerView) {
             ((RecyclerView) layout).setLayoutManager(new LinearLayoutManager(getContext()));
+            ((RecyclerView) layout).addItemDecoration(new SpacesItemDecoration(getResources()
+                    .getDimensionPixelSize(R.dimen.list_item_padding)));
             ((RecyclerView) layout).setAdapter(adapter);
         }
         return layout;
@@ -51,6 +59,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         super.onResume();
         if (getActivity() instanceof NavigationListener) {
             ((NavigationListener) getActivity()).showToolbar(true);
+            ((NavigationListener) getActivity()).setToolbarState(ButterflyToolbar.State.DEFAULT);
         }
     }
 
@@ -60,14 +69,14 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         }
     }
 
-    public void addEntry(final Entry entry) {
+    public synchronized void addEntry(@NonNull Entry entry) {
         if (adapter != null) {
             adapter.addEntry(entry);
         }
     }
 
     @Override
-    public void onPausePlay(final Entry entry) {
+    public void onPausePlay(@NonNull final Entry entry) {
         stopAudio();
         if (isEntryPlaying(entry)) {
             playingEntry = null;
@@ -80,11 +89,20 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     }
 
     @Override
-    public boolean isEntryPlaying(final Entry entry) {
+    public boolean isEntryPlaying(@NonNull final Entry entry) {
         return playingEntry != null && playingEntry.equals(entry);
     }
 
-    /** Stops any currently playing audio. */
+    @Override
+    public void onEntrySelected(@NonNull Entry entry) {
+        if (getActivity() instanceof NavigationListener) {
+            ((NavigationListener) getActivity()).showEntryDetail(entry);
+        }
+    }
+
+    /**
+     * Stops any currently playing audio.
+     */
     private void stopAudio() {
         if (mediaPlayer != null) {
             try {
@@ -99,7 +117,9 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         }
     }
 
-    /** Plays an audio clip based on the given path. */
+    /**
+     * Plays an audio clip based on the given path.
+     */
     private void playAudio(final String path) {
         isAudioPlaying = true;
         try {

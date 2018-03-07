@@ -1,6 +1,7 @@
 package com.windowmirror.android.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,6 +55,13 @@ public class Entry implements Serializable {
             }
         }
         return sb.toString().trim();
+    }
+
+    public void setFullTranscription(String transcription) {
+        Transcription transcription1 = new Transcription(null, transcription);
+        transcription1.setOxfordStatus(OxfordStatus.SUCCESSFUL);
+        transcriptions = new ArrayList<>();
+        transcriptions.add(transcription1);
     }
 
     public long getOxfordTimestamp() {

@@ -32,13 +32,10 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by songchenwen on 14-9-15.
- */
 public class AudioVisualizerView extends View {
     private static final float LineWidth = 2; // todo convert from DP
-    private static final int LineColor = Color.MAGENTA;
-    private static final int SubLineColor = Color.CYAN;
+    private static final int LineColor = Color.argb(100, 103, 58, 183);
+    private static final int SubLineColor = Color.argb(20, 103, 58, 183);
     private static final int SubLineWidth = 1;
     private static final int SubLineCount = 5;
     private static final int HorizontalStraightLineLength = 20; // todo convert from DP

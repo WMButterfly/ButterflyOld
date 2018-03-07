@@ -28,6 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:fontFamily="@font/lato_regular"
         android:gravity="center"
         android:lineSpacingMultiplier="1.3"
         android:paddingLeft="16dp"
@@ -45,6 +46,7 @@
         style="@style/ButtonAccent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/lato_regular"
         android:text="@string/login_button_label" />
 
     <View
@@ -56,16 +58,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:fontFamily="@font/lato_regular"
         android:gravity="center"
         android:lineSpacingMultiplier="1.3"
         android:text="@string/trademark1"
-        android:textSize="11sp" />
+        android:textSize="10sp" />
 
     <android.support.v7.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="16dp"
+        android:fontFamily="@font/lato_regular"
         android:gravity="center"
         android:text="@string/copyright"
         android:textSize="10sp" />

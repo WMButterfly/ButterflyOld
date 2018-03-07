@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -26,6 +27,7 @@ import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.feed.FeedFragment;
+import com.windowmirror.android.feed.detail.FeedDetailFragment;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.listener.RecordListener;
@@ -39,6 +41,8 @@ import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
 
 import net.danlew.android.joda.JodaTimeAndroid;
+
+import java.util.Locale;
 
 import view.navigation.ButterflyToolbar;
 import view.navigation.UserHeaderView;
@@ -64,19 +68,28 @@ public class MainActivity extends FragmentActivity implements
     private ButterflyToolbar toolbar;
     private DrawerLayout drawerLayout;
     private UserHeaderView userHeaderView;
+    private View audioRecordContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        audioRecordContainer = findViewById(R.id.audio_fragment_container);
         registerBroadcastReceivers();
         JodaTimeAndroid.init(this);
         setupNavigation();
         showFeedFragment();
+        showRecordingFragment(false);
         findViewById(R.id.sign_out).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onSignOut();
+            }
+        });
+        findViewById(R.id.about).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onAboutClick();
             }
         });
     }
@@ -92,12 +105,25 @@ public class MainActivity extends FragmentActivity implements
                 toggleRecording();
             }
         });
-        toolbar.setDrawerListener(new View.OnClickListener() {
+        toolbar.setMenuListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleNavDrawer();
             }
         });
+        toolbar.setBackListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,
+                drawerLayout,
+                toolbar,
+                R.string.app_name,
+                R.string.app_name);
+        drawerLayout.addDrawerListener(toggle);
     }
 
     private void registerBroadcastReceivers() {
@@ -153,7 +179,7 @@ public class MainActivity extends FragmentActivity implements
             drawerLayout.closeDrawer(GravityCompat.START);
             return;
         }
-        if (getFragmentInView() instanceof AudioRecordFragment) {
+        if (isShowingRecord) {
             toggleRecording();
             return;
         }
@@ -173,23 +199,13 @@ public class MainActivity extends FragmentActivity implements
     }
 
     private void toggleRecording() {
-        final Fragment fragment = getFragmentInView();
+        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.audio_fragment);
         if (fragment instanceof AudioRecordFragment) {
             final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
+            showRecordingFragment(isRecording);
             if (!isRecording) { // We don't want to start the service if we just began recording
                 startSphynxService();
             }
-        } else {
-            showRecordingFragment();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    final Fragment fragment = getFragmentInView();
-                    if (fragment instanceof AudioRecordFragment) {
-                        ((AudioRecordFragment) fragment).toggleRecording();
-                    }
-                }
-            }, 100);
         }
     }
 
@@ -201,12 +217,11 @@ public class MainActivity extends FragmentActivity implements
         replaceFragment(fragment, FeedFragment.TAG, true);
     }
 
-    private void showRecordingFragment() {
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(AudioRecordFragment.TAG);
-        if (!(fragment instanceof AudioRecordFragment)) {
-            fragment = new AudioRecordFragment();
-        }
-        replaceFragment(fragment, AudioRecordFragment.TAG, true);
+    private boolean isShowingRecord;
+
+    private synchronized void showRecordingFragment(boolean show) {
+        isShowingRecord = show;
+        audioRecordContainer.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -236,9 +251,7 @@ public class MainActivity extends FragmentActivity implements
     public void onRecordStop() {
         startSphynxService();
         unlockOrientation();
-        if (getFragmentInView() instanceof AudioRecordFragment) {
-            onBackPressed(); // Go back to feed
-        }
+        showRecordingFragment(false);
     }
 
     private void startSphynxService() {
@@ -294,11 +307,35 @@ public class MainActivity extends FragmentActivity implements
     }
 
     @Override
+    public void setToolbarState(@NonNull ButterflyToolbar.State state) {
+        if (toolbar != null) {
+            toolbar.setState(state);
+        }
+    }
+
+    @Override
     public void onSignOut() {
         BackendService.clearCredentials(getApplicationContext());
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public void showEntryDetail(@NonNull Entry entry) {
+        String tag = String.format(Locale.US, "Entry-%d", entry.getTimestamp());
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (!(fragment instanceof FeedDetailFragment)) {
+            fragment = FeedDetailFragment.create(entry);
+        }
+        replaceFragment(fragment, tag, true);
+    }
+
+    private void onAboutClick() {
+        String url = "https://windowmirror.org";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
     }
 
     private class EntryBroadcastReceiver extends BroadcastReceiver {

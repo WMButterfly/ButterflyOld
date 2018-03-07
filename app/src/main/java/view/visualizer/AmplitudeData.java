@@ -19,9 +19,6 @@ package view.visualizer;
 
 import com.google.common.primitives.Shorts;
 
-/**
- * Created by songchenwen on 14-9-15.
- */
 public class AmplitudeData {
     private static final int sampleCount = 256;
 
