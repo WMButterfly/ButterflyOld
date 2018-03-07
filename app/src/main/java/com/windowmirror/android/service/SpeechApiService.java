@@ -21,15 +21,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ProjectOxfordService extends IntentService implements ISpeechRecognitionServerEvents {
-    private static final String TAG = "ProjectOxfordService";
+public class SpeechApiService extends IntentService implements ISpeechRecognitionServerEvents {
+    private static final String TAG = "SpeechApiService";
     public static final String ACTION_ENTRY_UPDATED = "wmeupdate";
     public static final String KEY_ENTRY = "entry";
 
     private Entry entry;
 
-    public ProjectOxfordService() {
-        super("ProjectOxfordService");
+    public SpeechApiService() {
+        super("SpeechApiService");
     }
 
     @Override
@@ -98,10 +98,12 @@ public class ProjectOxfordService extends IntentService implements ISpeechRecogn
 
     @Override
     public void onPartialResponseReceived(String s) {
+        // empty
     }
 
     @Override
     public void onFinalResponseReceived(RecognitionResult recognitionResult) {
+        // empty
     }
 
     private ISpeechRecognitionServerEvents getListenerForTranscription(final Transcription transcription) {

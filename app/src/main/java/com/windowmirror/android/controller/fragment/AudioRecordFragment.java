@@ -21,10 +21,11 @@ import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.audio.AudioRecorder;
 import com.windowmirror.android.listener.EntryActionListener;
+import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.Transcription;
-import com.windowmirror.android.service.ProjectOxfordService;
+import com.windowmirror.android.service.SpeechApiService;
 import com.windowmirror.android.util.FileUtility;
 
 import java.io.File;
@@ -32,7 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import view.AudioVisualizerView;
+import view.visualizer.AudioVisualizerView;
 
 /**
  * A Fragment used to record and save audio.
@@ -78,6 +79,14 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
 
         visualizer = layout.findViewById(R.id.visualizer);
         return layout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof NavigationListener) {
+            ((NavigationListener) getActivity()).showToolbar(false);
+        }
     }
 
     @Override
@@ -150,6 +159,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     private void onRecordFail() {
         isRecording = false;
         recordButton.setSelected(false);
+        Toast.makeText(getContext(), "Recording failed", Toast.LENGTH_SHORT).show();
         if (getActivity() instanceof RecordListener) {
             ((RecordListener) getActivity()).onRecordStop();
         }
@@ -179,8 +189,8 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
     @Override
     public void onAudioRecordComplete(String filePath, List<String> chunks) {
         final Entry entry = createEntry(chunks);
-        Intent oxfordIntent = new Intent(getActivity(), ProjectOxfordService.class);
-        oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
+        Intent oxfordIntent = new Intent(getActivity(), SpeechApiService.class);
+        oxfordIntent.putExtra(SpeechApiService.KEY_ENTRY, entry);
         getActivity().startService(oxfordIntent);
     }
 

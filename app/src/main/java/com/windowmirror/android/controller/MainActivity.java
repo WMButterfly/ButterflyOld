@@ -8,40 +8,62 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
+import android.view.View;
 
 import com.windowmirror.android.R;
+import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.feed.FeedFragment;
 import com.windowmirror.android.listener.EntryActionListener;
+import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.OxfordStatus;
+import com.windowmirror.android.service.BackendService;
 import com.windowmirror.android.service.BootReceiver;
-import com.windowmirror.android.service.ProjectOxfordService;
+import com.windowmirror.android.service.SpeechApiService;
 import com.windowmirror.android.service.SphynxService;
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
-import static com.windowmirror.android.service.ProjectOxfordService.KEY_ENTRY;
+import view.navigation.ButterflyToolbar;
+import view.navigation.UserHeaderView;
+
+import static com.windowmirror.android.service.SpeechApiService.KEY_ENTRY;
 
 /**
  * The Activity which controls all views for authenticated users
+ *
  * @author alliecurry
  */
-public class MainActivity extends FragmentActivity implements EntryActionListener, RecordListener {
+public class MainActivity extends FragmentActivity implements
+        NavigationListener,
+        EntryActionListener,
+        RecordListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MAX_ENTRY_RETRY_QUEUE = 5;
 
     private Intent sphynxIntent;
     private int prevOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+
+    /* Views */
+    private ButterflyToolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private UserHeaderView userHeaderView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +71,38 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         setContentView(R.layout.activity_main);
         registerBroadcastReceivers();
         JodaTimeAndroid.init(this);
+        setupNavigation();
+        showFeedFragment();
+        findViewById(R.id.sign_out).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSignOut();
+            }
+        });
+    }
+
+    private void setupNavigation() {
+        toolbar = findViewById(R.id.toolbar);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        userHeaderView = findViewById(R.id.user_header);
+        // TODO populate header with user data
+        toolbar.setLogoListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleRecording();
+            }
+        });
+        toolbar.setDrawerListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleNavDrawer();
+            }
+        });
     }
 
     private void registerBroadcastReceivers() {
-        // Project Oxford Broadcasts
-        final IntentFilter intentFilterOxford = new IntentFilter(ProjectOxfordService.ACTION_ENTRY_UPDATED);
+        // Speech API Broadcasts
+        final IntentFilter intentFilterOxford = new IntentFilter(SpeechApiService.ACTION_ENTRY_UPDATED);
         LocalBroadcastManager.getInstance(this).registerReceiver(new EntryBroadcastReceiver(), intentFilterOxford);
 
         // Sphynx Broadcasts
@@ -81,18 +130,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         } else {
             startSphynxService();
         }
-
         queueEntriesForRetry();
-    }
-
-    private void toggleRecording() {
-        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_top);
-        if (fragment instanceof AudioRecordFragment) {
-            final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
-            if (!isRecording) { // We don't want to start the service if we just began recording
-                startSphynxService();
-            }
-        }
     }
 
     @Override
@@ -111,6 +149,14 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
 
     @Override
     public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
+        if (getFragmentInView() instanceof AudioRecordFragment) {
+            toggleRecording();
+            return;
+        }
         if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
             super.onBackPressed();
         } else { // No more fragments... used to avoid blank screen
@@ -118,20 +164,65 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         }
     }
 
+    private void toggleNavDrawer() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            drawerLayout.openDrawer(GravityCompat.START);
+        }
+    }
+
+    private void toggleRecording() {
+        final Fragment fragment = getFragmentInView();
+        if (fragment instanceof AudioRecordFragment) {
+            final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
+            if (!isRecording) { // We don't want to start the service if we just began recording
+                startSphynxService();
+            }
+        } else {
+            showRecordingFragment();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    final Fragment fragment = getFragmentInView();
+                    if (fragment instanceof AudioRecordFragment) {
+                        ((AudioRecordFragment) fragment).toggleRecording();
+                    }
+                }
+            }, 100);
+        }
+    }
+
+    private void showFeedFragment() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(FeedFragment.TAG);
+        if (!(fragment instanceof FeedFragment)) {
+            fragment = new FeedFragment();
+        }
+        replaceFragment(fragment, FeedFragment.TAG, true);
+    }
+
+    private void showRecordingFragment() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(AudioRecordFragment.TAG);
+        if (!(fragment instanceof AudioRecordFragment)) {
+            fragment = new AudioRecordFragment();
+        }
+        replaceFragment(fragment, AudioRecordFragment.TAG, true);
+    }
+
     @Override
     public void onEntryCreated(Entry entry) {
         LocalPrefs.addEntry(this, entry);
-        final Fragment fragmentBottom = getSupportFragmentManager().findFragmentById(R.id.fragment_bottom);
-        if (fragmentBottom instanceof FeedFragment) {
-            ((FeedFragment) fragmentBottom).addEntry(entry);
+        final Fragment fragment = getFragmentInView();
+        if (fragment instanceof FeedFragment) {
+            ((FeedFragment) fragment).addEntry(entry);
         }
     }
 
     @Override
     public void onEntryUpdated(Entry entry) {
-        final Fragment fragmentBottom = getSupportFragmentManager().findFragmentById(R.id.fragment_bottom);
-        if (fragmentBottom instanceof FeedFragment) {
-            ((FeedFragment) fragmentBottom).notifyDataSetChanged();
+        final Fragment fragment = getFragmentInView();
+        if (fragment instanceof FeedFragment) {
+            ((FeedFragment) fragment).notifyDataSetChanged();
         }
     }
 
@@ -145,6 +236,9 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
     public void onRecordStop() {
         startSphynxService();
         unlockOrientation();
+        if (getFragmentInView() instanceof AudioRecordFragment) {
+            onBackPressed(); // Go back to feed
+        }
     }
 
     private void startSphynxService() {
@@ -159,6 +253,52 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         } else { // Need to create an Intent...
             stopService(new Intent(getApplicationContext(), SphynxService.class));
         }
+    }
+
+    public void replaceFragment(@NonNull Fragment fragment,
+                                @NonNull String tag,
+                                boolean addToStack) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        try {
+            transaction.replace(R.id.fragment_frame_layout, fragment, tag);
+            if (addToStack) {
+                transaction.addToBackStack(null);
+            }
+            transaction.commit();
+        } catch (final IllegalStateException e) {
+            // Thrown if the user exists the app during this operation
+            Log.e(TAG, String.format("Failed to display Fragment %s:\n%s", tag, e.getMessage()));
+        }
+    }
+
+    /**
+     * @return The Fragment currently shown in the main area (if any)
+     */
+    @Nullable
+    public Fragment getFragmentInView() {
+        return getSupportFragmentManager().findFragmentById(R.id.fragment_frame_layout);
+    }
+
+    @Override
+    public void showToolbar(boolean show) {
+        if (toolbar == null) {
+            return;
+        }
+        if (show) {
+            toolbar.setVisibility(View.VISIBLE);
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        } else {
+            toolbar.setVisibility(View.GONE);
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        }
+    }
+
+    @Override
+    public void onSignOut() {
+        BackendService.clearCredentials(getApplicationContext());
+        Intent intent = new Intent(this, AuthActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private class EntryBroadcastReceiver extends BroadcastReceiver {
@@ -189,12 +329,16 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         return false;
     }
 
-    /** Allows the user to rotate their screen */
+    /**
+     * Allows the user to rotate their screen
+     */
     private void unlockOrientation() {
         setRequestedOrientation(prevOrientation);
     }
 
-    /** Prevents the user from rotating their screen and restarting the Activity. */
+    /**
+     * Prevents the user from rotating their screen and restarting the Activity.
+     */
     private void lockOrientation() {
         prevOrientation = getRequestedOrientation();
         Display display = getWindowManager().getDefaultDisplay();
@@ -226,7 +370,7 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 }
                 break;
-            default :
+            default:
                 if (height > width) {
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 } else {
@@ -244,9 +388,9 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         for (final Entry entry : LocalPrefs.getStoredEntries(this)) {
             if (entry.getOxfordStatus() == OxfordStatus.REQUIRES_RETRY ||
                     (entry.getOxfordStatus() == OxfordStatus.NONE && entry.getFullTranscription().isEmpty() ||
-                    (entry.getOxfordStatus() == OxfordStatus.PENDING
-                            && System.currentTimeMillis() - entry.getTimestamp() > 300000))) {
-                sendEntryToOxford(entry);
+                            (entry.getOxfordStatus() == OxfordStatus.PENDING
+                                    && System.currentTimeMillis() - entry.getTimestamp() > 300000))) {
+                sendEntryToSpeechApi(entry);
                 ++count;
             }
             if (count == MAX_ENTRY_RETRY_QUEUE) {
@@ -255,10 +399,10 @@ public class MainActivity extends FragmentActivity implements EntryActionListene
         }
     }
 
-    private void sendEntryToOxford(final Entry entry) {
-        Log.d(TAG, "Sending Entry to Oxford: " + entry.getTimestamp());
-        final Intent oxfordIntent = new Intent(this, ProjectOxfordService.class);
-        oxfordIntent.putExtra(ProjectOxfordService.KEY_ENTRY, entry);
-        startService(oxfordIntent);
+    private void sendEntryToSpeechApi(final Entry entry) {
+        Log.d(TAG, "Sending Entry to Speech API: " + entry.getTimestamp());
+        final Intent intent = new Intent(this, SpeechApiService.class);
+        intent.putExtra(SpeechApiService.KEY_ENTRY, entry);
+        startService(intent);
     }
 }

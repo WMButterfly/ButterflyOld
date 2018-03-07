@@ -1,4 +1,4 @@
-package view;
+package view.visualizer;
 /*
  *
  *  * Copyright 2014 http://Bither.net

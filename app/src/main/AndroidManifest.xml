@@ -38,7 +38,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.ProjectOxfordService" />
+        <service android:name=".service.SpeechApiService" />
         <service android:name=".service.SphynxService" />
 
     </application>

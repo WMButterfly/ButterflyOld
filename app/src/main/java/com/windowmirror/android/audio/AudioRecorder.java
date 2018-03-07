@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import view.AudioVisualizerView;
+import view.visualizer.AudioVisualizerView;
 
 /**
  * @author alliecurry

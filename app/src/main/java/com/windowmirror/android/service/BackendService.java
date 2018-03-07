@@ -39,6 +39,10 @@ public final class BackendService {
         LocalPrefs.setCredentials(context, credentials);
     }
 
+    public static void clearCredentials(@NonNull Context context) {
+        setCredentials(context, null);
+    }
+
     public static boolean hasCredentials(@NonNull Context context) {
         if (sCredentials == null) {
             sCredentials = LocalPrefs.getCredentials(context);

@@ -15,7 +15,7 @@
  *  * limitations under the License.
  *
  */
-package view;
+package view.visualizer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

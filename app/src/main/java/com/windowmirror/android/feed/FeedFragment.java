@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.windowmirror.android.R;
+import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.util.LocalPrefs;
 
@@ -43,6 +44,14 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
             ((RecyclerView) layout).setAdapter(adapter);
         }
         return layout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof NavigationListener) {
+            ((NavigationListener) getActivity()).showToolbar(true);
+        }
     }
 
     public void notifyDataSetChanged() {

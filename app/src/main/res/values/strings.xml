@@ -21,5 +21,6 @@
     <string name="login_button_label">Sign Up / Login</string>
     <string name="trademark1">Butterfly is a registered trademark of\nWindowMirror Inc. registered in USA</string>
     <string name="copyright">© 2018 WindowMirror Inc.</string>
+    <string name="sign_out">Sign Out</string>
 
 </resources>
