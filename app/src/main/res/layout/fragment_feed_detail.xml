@@ -12,8 +12,8 @@
         android:padding="16dp">
 
         <android.support.v7.widget.AppCompatEditText
-            style="@style/TranscriptionText"
             android:id="@+id/transcription"
+            style="@style/TranscriptionText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_feed_item"
@@ -23,14 +23,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <android.support.v7.widget.AppCompatTextView
                 android:id="@+id/length"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/lato_regular"
                 android:textColor="@color/primary_color_dark_alpha_80"
                 android:textSize="12sp"
                 tools:text="2:23:26" />
@@ -40,6 +41,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/lato_regular"
                 android:gravity="center"
                 android:textColor="@color/primary_color_dark_alpha_80"
                 android:textSize="12sp"
@@ -49,6 +51,7 @@
                 android:id="@+id/time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/lato_regular"
                 android:gravity="end"
                 android:textColor="@color/primary_color_dark_alpha_80"
                 android:textSize="12sp"

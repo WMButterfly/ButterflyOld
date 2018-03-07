@@ -2,14 +2,16 @@ package com.windowmirror.android.service;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
+import com.auth0.android.Auth0;
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.authentication.storage.CredentialsManager;
+import com.auth0.android.authentication.storage.SharedPreferencesStorage;
 import com.auth0.android.result.Credentials;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.windowmirror.android.BuildConfig;
-import com.windowmirror.android.util.LocalPrefs;
 
 import java.io.IOException;
 
@@ -24,6 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class BackendService {
     private static BackendService sBackendService;
     private static Credentials sCredentials;
+    private static CredentialsManager sCredentialsManager;
     private BackendApi mApi;
 
     public static BackendService getInstance() {
@@ -33,21 +36,32 @@ public final class BackendService {
         return sBackendService;
     }
 
+    public BackendApi getApi() {
+        return mApi;
+    }
+
     public static void setCredentials(@NonNull Context context,
-                                      @Nullable Credentials credentials) {
+                                      @NonNull Credentials credentials) {
+        getCredentialsManager(context).saveCredentials(credentials);
         sCredentials = credentials;
-        LocalPrefs.setCredentials(context, credentials);
     }
 
     public static void clearCredentials(@NonNull Context context) {
-        setCredentials(context, null);
+        getCredentialsManager(context).clearCredentials();
+        sCredentials = null;
     }
 
     public static boolean hasCredentials(@NonNull Context context) {
-        if (sCredentials == null) {
-            sCredentials = LocalPrefs.getCredentials(context);
+        return getCredentialsManager(context).hasValidCredentials();
+    }
+
+    public static CredentialsManager getCredentialsManager(@NonNull Context context) {
+        if (sCredentialsManager == null) {
+            Auth0 auth0 = new Auth0(context);
+            AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
+            sCredentialsManager = new CredentialsManager(apiClient, new SharedPreferencesStorage(context));
         }
-        return sCredentials != null && sCredentials.getAccessToken() != null;
+        return sCredentialsManager;
     }
 
     private BackendService() {

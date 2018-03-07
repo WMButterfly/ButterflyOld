@@ -1,5 +1,6 @@
 package com.windowmirror.android.feed;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,9 +18,13 @@ import android.widget.Toast;
 import com.windowmirror.android.R;
 import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.service.Recording;
+import com.windowmirror.android.service.BackendApiCallback;
+import com.windowmirror.android.service.BackendService;
 import com.windowmirror.android.util.LocalPrefs;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import view.SpacesItemDecoration;
 import view.navigation.ButterflyToolbar;
@@ -61,6 +66,38 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
             ((NavigationListener) getActivity()).showToolbar(true);
             ((NavigationListener) getActivity()).setToolbarState(ButterflyToolbar.State.DEFAULT);
         }
+    }
+
+    /**
+     * Loads the Recordings from the backend API.
+     */
+    private void loadRecordings() {
+        BackendService.getInstance()
+                .getApi()
+                .getAllRecordings()
+                .enqueue(new BackendApiCallback<List<Recording>>() {
+                    @Override
+                    public void onSuccess(@NonNull List<Recording> data) {
+                        // TODO somehow sync this with Entries
+                    }
+
+                    @Override
+                    public void onError(@Nullable String error) {
+                        Log.e(TAG, "Error retrieving recordings: " + error);
+                    }
+
+                    @Override
+                    public Context getContext() {
+                        return FeedFragment.this.getContext();
+                    }
+
+                    @Override
+                    public void onAuthenticationLost() {
+                        if (getActivity() instanceof NavigationListener) {
+                            ((NavigationListener) getActivity()).onSignOut();
+                        }
+                    }
+                });
     }
 
     public void notifyDataSetChanged() {

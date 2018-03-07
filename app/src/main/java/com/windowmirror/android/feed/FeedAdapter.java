@@ -66,7 +66,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         }
         if (!entries.contains(entry)) {
             entries.add(0, entry);
-            notifyItemInserted(0);
+            notifyDataSetChanged();
         }
     }
 

@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 
+import com.auth0.android.authentication.storage.CredentialsManagerException;
+import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.result.Credentials;
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.service.BackendService;
@@ -33,7 +36,18 @@ public final class SplashActivity extends Activity {
 
     private void checkAuth() {
         if (BackendService.hasCredentials(this)) {
-            startActivity(new Intent(this, MainActivity.class));
+            BackendService.getCredentialsManager(this).getCredentials(new BaseCallback<Credentials, CredentialsManagerException>() {
+                @Override
+                public void onSuccess(Credentials payload) {
+                    BackendService.setCredentials(SplashActivity.this, payload);
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                }
+
+                @Override
+                public void onFailure(CredentialsManagerException error) {
+                    startActivity(new Intent(SplashActivity.this, AuthActivity.class));
+                }
+            });
         } else {
             startActivity(new Intent(this, AuthActivity.class));
         }

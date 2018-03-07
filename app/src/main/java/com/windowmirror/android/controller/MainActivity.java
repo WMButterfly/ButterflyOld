@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -23,6 +24,7 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.View;
 
+import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
@@ -33,6 +35,8 @@ import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.OxfordStatus;
+import com.windowmirror.android.model.service.Recording;
+import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
 import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.SpeechApiService;
@@ -47,6 +51,7 @@ import java.util.Locale;
 import view.navigation.ButterflyToolbar;
 import view.navigation.UserHeaderView;
 
+import static com.windowmirror.android.model.OxfordStatus.SUCCESSFUL;
 import static com.windowmirror.android.service.SpeechApiService.KEY_ENTRY;
 
 /**
@@ -69,12 +74,14 @@ public class MainActivity extends FragmentActivity implements
     private DrawerLayout drawerLayout;
     private UserHeaderView userHeaderView;
     private View audioRecordContainer;
+    private View progressSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         audioRecordContainer = findViewById(R.id.audio_fragment_container);
+        progressSpinner = findViewById(R.id.progress);
         registerBroadcastReceivers();
         JodaTimeAndroid.init(this);
         setupNavigation();
@@ -90,6 +97,12 @@ public class MainActivity extends FragmentActivity implements
             @Override
             public void onClick(View v) {
                 onAboutClick();
+            }
+        });
+        progressSpinner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // consume clicks
             }
         });
     }
@@ -224,13 +237,51 @@ public class MainActivity extends FragmentActivity implements
         audioRecordContainer.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
+    @UiThread
+    private synchronized void showProgressSpinner(boolean show) {
+        progressSpinner.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     @Override
-    public void onEntryCreated(Entry entry) {
-        LocalPrefs.addEntry(this, entry);
+    public void onEntryCreated(final Entry entry) {
+        LocalPrefs.addEntry(this, entry); // TODO remove local prefs storage, rely on azure
         final Fragment fragment = getFragmentInView();
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).addEntry(entry);
         }
+        // Show spinner while we send to backend... could potentially remove this but for now,
+        // Preventing UI interaction while we sync with server
+        showProgressSpinner(true);
+        BackendService.getInstance()
+                .getApi()
+                .createRecording(entry.toRecording())
+                .enqueue(new BackendApiCallback<Recording>() {
+                    @Override
+                    public Context getContext() {
+                        return getApplicationContext();
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Recording data) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "Recording created with UUID: " + data.getUuid());
+                        }
+                        entry.setRecording(data);
+                        showProgressSpinner(false);
+                        // TODO store .wav and .txt on azure
+                    }
+
+                    @Override
+                    public void onError(@Nullable String error) {
+                        Log.e(TAG, "Error on creating recording: " + error);
+                        showProgressSpinner(false);
+                    }
+
+                    @Override
+                    public void onAuthenticationLost() {
+                        onSignOut();
+                    }
+                });
     }
 
     @Override
@@ -239,6 +290,45 @@ public class MainActivity extends FragmentActivity implements
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).notifyDataSetChanged();
         }
+        if (entry.getOxfordStatus() != SUCCESSFUL) {
+            return; // Currently just going to wait until transcription is done before updating entry on server
+            // Best case, server would be running the speech API, not the client...
+            // TODO may need to track status on back-end as well or instead?
+        }
+        Recording recording = entry.getRecording();
+        if (recording == null || recording.getUuid() == null) {
+            return; // Currently no server recording associated with this entry
+            // TODO should we create one in this case?
+            // ^^ watch out for race condition if speech API comes back faster than our original create Recording call
+        }
+        BackendService.getInstance()
+                .getApi()
+                .updateRecording(recording.getUuid(), recording)
+                .enqueue(new BackendApiCallback<Recording>() {
+                    @Override
+                    public Context getContext() {
+                        return getApplicationContext();
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Recording data) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "Recording created with UUID: " + data.getUuid());
+                        }
+                        showProgressSpinner(false);
+                        // TODO update .txt on azure?
+                    }
+
+                    @Override
+                    public void onError(@Nullable String error) {
+                        Log.e(TAG, "Error on updating recording: " + error);
+                    }
+
+                    @Override
+                    public void onAuthenticationLost() {
+                        onSignOut();
+                    }
+                });
     }
 
     @Override

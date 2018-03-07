@@ -1,11 +1,23 @@
 package com.windowmirror.android.model;
 
+import android.support.annotation.Nullable;
+
+import com.windowmirror.android.model.service.Recording;
+
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * POJO for holding a recording and transcription data.
+ * Update: Entry now encompasses "local data" with extra tracking needed while talking to Speech API
+ * (eg server data doesn't understand multi-piece transcriptions that come back in chunks)
+ * while Recording Object represents the pieces associated with the WindowMirror backend.
+ * A better implementation would have the server running the Speech API
+ * so that client doesn't have to worry about pending transcript pieces
+ * but until then, app should do it's best to track data between all services (local vs backend vs azure)
  * @author alliecurry
  */
 public class Entry implements Serializable {
@@ -17,6 +29,7 @@ public class Entry implements Serializable {
     private List<Transcription> transcriptions;
 
     private long oxfordTimestamp; // Time in milliseconds the last time this transcription was sent to Oxford
+    private Recording recording; // Server data associated with this entry
 
     public long getTimestamp() {
         return timestamp;
@@ -101,5 +114,21 @@ public class Entry implements Serializable {
             }
         }
         return isFail ? OxfordStatus.FAILED : OxfordStatus.SUCCESSFUL;
+    }
+
+    public Recording toRecording() {
+        return new Recording.Builder()
+                .date(new DateTime(timestamp))
+                .transcript(getFullTranscription())
+                .build();
+    }
+
+    @Nullable
+    public Recording getRecording() {
+        return recording;
+    }
+
+    public void setRecording(Recording recording) {
+        this.recording = recording;
     }
 }
