@@ -17,19 +17,19 @@ import retrofit2.http.Path;
 
 public interface BackendApi {
 
-    @GET("/recording")
+    @GET("/recording/")
     Call<List<Recording>> getAllRecordings();
 
-    @PATCH("/recording/{uuid}")
+    @PATCH("/recording/{uuid}/")
     Call<Recording> getRecording(@NonNull @Path("uuid") String uuid);
 
-    @POST("/recording")
+    @POST("/recording/")
     Call<Recording> createRecording(@NonNull @Body Recording request);
 
-    @PATCH("/recording/{uuid}")
+    @PATCH("/recording/{uuid}/")
     Call<Recording> updateRecording(@NonNull @Path("uuid") String uuid,
                                     @NonNull @Body Recording request);
 
-    @DELETE("/recording/{uuid}")
+    @DELETE("/recording/{uuid}/")
     Call<Response<Void>> deleteRecording(@NonNull @Path("uuid") String uuid);
 }
