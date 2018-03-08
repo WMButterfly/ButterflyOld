@@ -26,11 +26,14 @@ public class Entry implements Serializable {
     private long duration;
     private String audioFilePath;
     private List<Transcription> transcriptions;
-
+    private String uuid;
     private long oxfordTimestamp; // Time in milliseconds the last time this transcription was sent to Oxford
     private Recording recording; // Server data associated with this entry
 
     public long getTimestamp() {
+        if (timestamp == 0 && recording != null) {
+            return recording.getTimestamp();
+        }
         return timestamp;
     }
 
@@ -130,6 +133,7 @@ public class Entry implements Serializable {
         return new Recording.Builder()
                 .date(timestamp)
                 .transcript(getFullTranscription())
+//                .length(duration) // FIXME have server switch length/duration field to type long
                 .build();
     }
 
@@ -149,5 +153,12 @@ public class Entry implements Serializable {
 
     public void setRecording(Recording recording) {
         this.recording = recording;
+        if (recording != null) {
+            this.uuid = recording.getUuid();
+        }
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

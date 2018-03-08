@@ -52,7 +52,6 @@ import java.util.Locale;
 import view.navigation.ButterflyToolbar;
 import view.navigation.UserHeaderView;
 
-import static com.windowmirror.android.model.OxfordStatus.SUCCESSFUL;
 import static com.windowmirror.android.service.SpeechApiService.KEY_ENTRY;
 
 /**
@@ -112,7 +111,7 @@ public class MainActivity extends FragmentActivity implements
         toolbar = findViewById(R.id.toolbar);
         drawerLayout = findViewById(R.id.drawer_layout);
         userHeaderView = findViewById(R.id.user_header);
-        // TODO populate header with user data
+        // TODO populate header with user data?
         toolbar.setLogoListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -269,6 +268,7 @@ public class MainActivity extends FragmentActivity implements
                         }
                         entry.setRecording(data);
                         showProgressSpinner(false);
+                        onEntryUpdated(entry);
                         // TODO store .wav and .txt on azure
                     }
 
@@ -292,10 +292,15 @@ public class MainActivity extends FragmentActivity implements
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).notifyDataSetChanged();
         }
-        if (entry.getOxfordStatus() != SUCCESSFUL) {
-            return; // Currently just going to wait until transcription is done before updating entry on server
-            // Best case, server would be running the speech API, not the client...
-            // TODO may need to track status on back-end as well or instead?
+        Log.d(TAG, "Entry updated with status: " + entry.getOxfordStatus());
+//        if (entry.getOxfordStatus() != SUCCESSFUL) {
+//            return; // Currently just going to wait until transcription is done before updating entry on server
+//            // Best case, server would be running the speech API, not the client...
+//        }
+        String transcription = entry.getFullTranscription();
+        if (transcription == null || transcription.isEmpty()) {
+            Log.w(TAG, "Entry updated but no transcription found");
+            return;
         }
         Recording recording = entry.getRecording();
         if (recording == null || recording.getUuid() == null) {
@@ -304,6 +309,8 @@ public class MainActivity extends FragmentActivity implements
             // TODO should we create one in this case?
             // ^^ watch out for race condition if speech API comes back faster than our original create Recording call
         }
+        recording.setTranscription(transcription);
+        Log.d(TAG, "Updating entry with transcription:\n" + transcription);
         BackendService.getInstance()
                 .getApi()
                 .updateRecording(recording.getUuid(), recording)
@@ -316,7 +323,7 @@ public class MainActivity extends FragmentActivity implements
                     @Override
                     public void onSuccess(@NonNull Recording data) {
                         if (BuildConfig.DEBUG) {
-                            Log.d(TAG, "Recording created with UUID: " + data.getUuid());
+                            Log.d(TAG, "Recording update with UUID: " + data.getUuid());
                         }
                         showProgressSpinner(false);
                         // TODO update .txt on azure?
@@ -444,6 +451,7 @@ public class MainActivity extends FragmentActivity implements
     private class SphynxBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Sphynx Broadcast Received");
             toggleRecording();
         }
     }

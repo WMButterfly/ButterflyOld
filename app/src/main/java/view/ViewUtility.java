@@ -8,12 +8,17 @@ import com.windowmirror.android.R;
 import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.util.NetworkUtility;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public final class ViewUtility {
+    public static final String SERVER_DATE_FORMAT = "YYYY-MM-dd HH:mm:ss";
+    public static final String SERVER_DATE_FORMAT2 = "YYYY-MM-ddTHH:mm:ssZ";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMM d, yyyy", Locale.US);
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("h:mma", Locale.US);
 
@@ -27,6 +32,10 @@ public final class ViewUtility {
 
     public static String formatTime(long timestamp) {
         return TIME_FORMAT.format(new Date(timestamp));
+    }
+
+    public static DateTime parseDate(String date) {
+        return DateTime.parse(date, DateTimeFormat.forPattern(SERVER_DATE_FORMAT2));
     }
 
     public static String formatDuration(final long millis) {

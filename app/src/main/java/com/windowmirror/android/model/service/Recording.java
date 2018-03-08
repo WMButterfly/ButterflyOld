@@ -6,6 +6,8 @@ import org.joda.time.format.DateTimeFormat;
 
 import java.io.Serializable;
 
+import view.ViewUtility;
+
 public final class Recording implements Serializable {
     private static final long serialVersionUID = 6545620253345768732L;
 
@@ -44,6 +46,21 @@ public final class Recording implements Serializable {
         return length;
     }
 
+    public long getTimestamp() {
+        if (date == null) {
+            return 0;
+        }
+        try {
+            return ViewUtility.parseDate(date).getMillis();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public void setTranscription(String transcription) {
+        this.transcript = transcription;
+    }
+
     public static class Builder {
         private String name;
         private String transcript;
@@ -61,7 +78,7 @@ public final class Recording implements Serializable {
         }
 
         public Builder date(long timestamp) {
-            this.date = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").print(timestamp);
+            this.date = DateTimeFormat.forPattern(ViewUtility.SERVER_DATE_FORMAT).print(timestamp);
             return this;
         }
 

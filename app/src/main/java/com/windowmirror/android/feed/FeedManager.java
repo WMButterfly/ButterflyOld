@@ -94,6 +94,13 @@ public final class FeedManager {
     }
 
     private static boolean matches(@NonNull Entry entry, @NonNull Recording recording) {
-        return entry.getRecording() != null && entry.getRecording().getUuid().equals(recording.getUuid());
+        if (entry.getRecording() != null && entry.getRecording().getUuid().equals(recording.getUuid())) {
+            return true;
+        } else if (entry.getUuid() != null && entry.getUuid().equals(recording.getUuid())) {
+            return true;
+        } else if (entry.getTimestamp() == recording.getTimestamp()) {
+            return true;
+        }
+        return false;
     }
 }
