@@ -41,6 +41,7 @@ public class AuthActivity extends Activity implements AuthCallback {
         auth0.setOIDCConformant(true);
         WebAuthProvider.init(auth0)
                 .withScope(AUTH0_SCOPE)
+                .withAudience("lepidoptera-api") // TODO externalize
                 .start(this, this);
     }
 
