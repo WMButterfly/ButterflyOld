@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +14,13 @@ import android.widget.TextView;
 import com.windowmirror.android.R;
 import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.model.Entry;
+import com.windowmirror.android.model.OxfordStatus;
 
 import view.ViewUtility;
 import view.navigation.ButterflyToolbar;
 
-import static com.windowmirror.android.model.OxfordStatus.SUCCESSFUL;
+import static com.windowmirror.android.model.OxfordStatus.PENDING;
+import static com.windowmirror.android.model.OxfordStatus.REQUIRES_RETRY;
 
 /**
  * Displays full transcription.
@@ -86,10 +87,10 @@ public class FeedDetailFragment extends Fragment {
             mTranscriptionView.setText(R.string.entry_not_found);
             return;
         }
-        mCanEdit = mEntry.getOxfordStatus() == SUCCESSFUL;
+        OxfordStatus status = mEntry.getOxfordStatus();
+        mCanEdit = status != PENDING && status != REQUIRES_RETRY;
         mTranscriptionView.setFocusable(mCanEdit);
         mTranscriptionView.setEnabled(mCanEdit);
-        mTranscriptionView.setInputType(mCanEdit ? InputType.TYPE_TEXT_FLAG_CAP_SENTENCES : InputType.TYPE_NULL);
         String transcriptionStr = mEntry.getFullTranscription();
         if (transcriptionStr != null && !transcriptionStr.isEmpty()) {
             mTranscriptionView.setText(transcriptionStr);
