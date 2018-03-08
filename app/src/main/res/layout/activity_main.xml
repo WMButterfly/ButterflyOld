@@ -71,12 +71,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <fragment
+            android:id="@+id/settings_fragment"
+            android:name="com.windowmirror.android.controller.fragment.SettingsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/about"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?selectableItemBackground"
-            android:drawablePadding="8dp"
+            android:drawablePadding="16dp"
             android:drawableStart="@drawable/ic_info"
             android:fontFamily="@font/lato_regular"
             android:gravity="center_vertical"

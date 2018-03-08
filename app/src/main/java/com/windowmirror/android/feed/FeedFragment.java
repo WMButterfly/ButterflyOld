@@ -42,6 +42,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     private boolean isAudioPlaying = false;
     private RecyclerView recyclerView;
     private View progressSpinner;
+    private View emptyView;
 
     @Nullable
     @Override
@@ -50,12 +51,14 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         adapter = new FeedAdapter(this);
         recyclerView = layout.findViewById(R.id.recycler_view);
         progressSpinner = layout.findViewById(R.id.progress);
+        emptyView = layout.findViewById(R.id.empty_message);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(new SpacesItemDecoration(getResources()
                 .getDimensionPixelSize(R.dimen.list_item_padding)));
         recyclerView.setAdapter(adapter);
         if (entries != null && !entries.isEmpty()) {
             adapter.setEntries(entries);
+            emptyView.setVisibility(View.GONE);
             showProgress(false);
         } else {
             loadRecordings();
@@ -95,6 +98,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
                     public void onError(@Nullable String error) {
                         Log.e(TAG, "Error retrieving recordings: " + error);
                         // TODO add error state to UI?
+                        emptyView.setVisibility(View.VISIBLE);
                         showProgress(false);
                     }
 
@@ -123,6 +127,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         }
         adapter.setEntries(entries);
         showProgress(false);
+        emptyView.setVisibility(entries.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     public void notifyDataSetChanged() {
@@ -134,6 +139,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     public synchronized void addEntry(@NonNull Entry entry) {
         if (adapter != null) {
             adapter.addEntry(entry);
+            emptyView.setVisibility(View.GONE);
         }
     }
 

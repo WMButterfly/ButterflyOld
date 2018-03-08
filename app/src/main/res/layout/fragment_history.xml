@@ -14,6 +14,18 @@
         android:requiresFadingEdge="vertical"
         android:scrollbarStyle="outsideOverlay" />
 
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/empty_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp"
+        android:lineSpacingMultiplier="1.2"
+        android:fontFamily="@font/lato_regular"
+        android:text="@string/recordings_empty_message"
+        android:visibility="gone"
+        />
+
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="wrap_content"

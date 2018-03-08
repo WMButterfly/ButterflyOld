@@ -172,7 +172,6 @@ public class SphynxService extends Service implements RecognitionListener {
     }
 
     private void openMainApp(final boolean isStart) {
-        Log.d("allie", "OPEN MAIN APP");
         // First broadcast message, then open app if needed
         final Intent localIntent =  new Intent(isStart ? ACTION_START : ACTION_STOP);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
