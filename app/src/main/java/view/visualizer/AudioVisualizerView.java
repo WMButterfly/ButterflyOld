@@ -35,12 +35,12 @@ import java.util.List;
 public class AudioVisualizerView extends View {
     private static final float LineWidth = 2; // todo convert from DP
     private static final int LineColor = Color.argb(100, 103, 58, 183);
-    private static final int SubLineColor = Color.argb(20, 103, 58, 183);
+    private static final int SubLineColor = Color.argb(60, 103, 58, 183);
     private static final int SubLineWidth = 1;
     private static final int SubLineCount = 5;
-    private static final int HorizontalStraightLineLength = 20; // todo convert from DP
+    private static final int HorizontalStraightLineLength = 10; // todo convert from DP
     private static final float MinAmplitudeRate = 0.1f;
-    private static final int WaveCount = 1;
+    private static final int WaveCount = 4;
     private static final long WaveDuration = 500;
 
     private static final int MinAmplitude = 15000;
