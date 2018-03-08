@@ -1,10 +1,9 @@
 package com.windowmirror.android.model;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.windowmirror.android.model.service.Recording;
-
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,6 +56,9 @@ public class Entry implements Serializable {
 
     public String getFullTranscription() {
         if (transcriptions == null) {
+            if (recording != null) {
+                return recording.getTranscript();
+            }
             return null;
         }
         final StringBuilder sb = new StringBuilder();
@@ -116,11 +118,24 @@ public class Entry implements Serializable {
         return isFail ? OxfordStatus.FAILED : OxfordStatus.SUCCESSFUL;
     }
 
+    /**
+     * Create a server-ready Recording from the local data.
+     * Only meant to be used when first creating the Server Object.
+     */
     public Recording toRecording() {
         return new Recording.Builder()
-                .date(new DateTime(timestamp))
+                .date(timestamp)
                 .transcript(getFullTranscription())
                 .build();
+    }
+
+    /**
+     * Creates an Entry wrapper around the given Recording
+     */
+    public static Entry fromRecording(@NonNull Recording recording) {
+        Entry entry = new Entry();
+        entry.recording = recording;
+        return entry;
     }
 
     @Nullable

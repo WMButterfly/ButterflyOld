@@ -2,7 +2,7 @@ package com.windowmirror.android.model.service;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import java.io.Serializable;
 
@@ -13,7 +13,7 @@ public final class Recording implements Serializable {
     private String uuid;
 
     @SerializedName("DateCreated")
-    private DateTime date;
+    private String date;
 
     @SerializedName("Name")
     private String name;
@@ -28,7 +28,7 @@ public final class Recording implements Serializable {
         return uuid;
     }
 
-    public DateTime getDate() {
+    public String getDate() {
         return date;
     }
 
@@ -48,7 +48,7 @@ public final class Recording implements Serializable {
         private String name;
         private String transcript;
         private String length;
-        private DateTime date;
+        private String date;
 
         public Builder name(String name) {
             this.name = name;
@@ -60,8 +60,8 @@ public final class Recording implements Serializable {
             return this;
         }
 
-        public Builder date(DateTime date) {
-            this.date = date;
+        public Builder date(long timestamp) {
+            this.date = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").print(timestamp);
             return this;
         }
 
