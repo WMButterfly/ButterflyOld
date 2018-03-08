@@ -29,6 +29,7 @@ import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.controller.fragment.AudioRecordFragment;
 import com.windowmirror.android.feed.FeedFragment;
+import com.windowmirror.android.feed.FeedManager;
 import com.windowmirror.android.feed.detail.FeedDetailFragment;
 import com.windowmirror.android.listener.EntryActionListener;
 import com.windowmirror.android.listener.NavigationListener;
@@ -176,7 +177,7 @@ public class MainActivity extends FragmentActivity implements
     protected void onPause() {
         super.onPause();
         // Ensure Entries are stored before going to background
-        LocalPrefs.storeEntries(this);
+        FeedManager.getInstance(this).storeEntries();
 
         // Stop or start sphynx service depending on settings
         if (LocalPrefs.getIsBackgroundService(this)) {
@@ -244,7 +245,7 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onEntryCreated(final Entry entry) {
-        LocalPrefs.addEntry(this, entry); // TODO remove local prefs storage, rely on azure
+        FeedManager.getInstance(this).addEntry(entry);
         final Fragment fragment = getFragmentInView();
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).addEntry(entry);
@@ -286,6 +287,7 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onEntryUpdated(Entry entry) {
+        FeedManager.getInstance(this).updateEntry(entry);
         final Fragment fragment = getFragmentInView();
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).notifyDataSetChanged();
@@ -297,6 +299,7 @@ public class MainActivity extends FragmentActivity implements
         }
         Recording recording = entry.getRecording();
         if (recording == null || recording.getUuid() == null) {
+            Log.w(TAG, "Entry updated but no Recording was associated");
             return; // Currently no server recording associated with this entry
             // TODO should we create one in this case?
             // ^^ watch out for race condition if speech API comes back faster than our original create Recording call

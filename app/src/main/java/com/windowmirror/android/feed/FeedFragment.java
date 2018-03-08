@@ -21,9 +21,7 @@ import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.service.Recording;
 import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
-import com.windowmirror.android.util.LocalPrefs;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import view.SpacesItemDecoration;
@@ -37,24 +35,30 @@ import view.navigation.ButterflyToolbar;
 public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     public static final String TAG = FeedFragment.class.getSimpleName();
     private FeedAdapter adapter;
+    private List<Entry> entries;
 
     private MediaPlayer mediaPlayer;
     private Entry playingEntry;
     private boolean isAudioPlaying = false;
+    private RecyclerView recyclerView;
+    private View progressSpinner;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View layout = inflater.inflate(R.layout.fragment_history, container, false);
-        if (adapter == null) {
-            adapter = new FeedAdapter(this);
-            adapter.setEntries(new ArrayList<>(LocalPrefs.getStoredEntries(getActivity())));
-        }
-        if (layout instanceof RecyclerView) {
-            ((RecyclerView) layout).setLayoutManager(new LinearLayoutManager(getContext()));
-            ((RecyclerView) layout).addItemDecoration(new SpacesItemDecoration(getResources()
-                    .getDimensionPixelSize(R.dimen.list_item_padding)));
-            ((RecyclerView) layout).setAdapter(adapter);
+        adapter = new FeedAdapter(this);
+        recyclerView = layout.findViewById(R.id.recycler_view);
+        progressSpinner = layout.findViewById(R.id.progress);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.addItemDecoration(new SpacesItemDecoration(getResources()
+                .getDimensionPixelSize(R.dimen.list_item_padding)));
+        recyclerView.setAdapter(adapter);
+        if (entries != null && !entries.isEmpty()) {
+            adapter.setEntries(entries);
+            showProgress(false);
+        } else {
+            loadRecordings();
         }
         return layout;
     }
@@ -68,22 +72,30 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         }
     }
 
+    private void showProgress(boolean show) {
+        progressSpinner.setVisibility(show ? View.VISIBLE : View.GONE);
+        recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
     /**
      * Loads the Recordings from the backend API.
      */
     private void loadRecordings() {
+        showProgress(true);
         BackendService.getInstance()
                 .getApi()
                 .getAllRecordings()
                 .enqueue(new BackendApiCallback<List<Recording>>() {
                     @Override
                     public void onSuccess(@NonNull List<Recording> data) {
-                        // TODO somehow sync this with Entries
+                        onLoadRecordingsSuccess(data);
                     }
 
                     @Override
                     public void onError(@Nullable String error) {
                         Log.e(TAG, "Error retrieving recordings: " + error);
+                        // TODO add error state to UI?
+                        showProgress(false);
                     }
 
                     @Override
@@ -98,6 +110,19 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
                         }
                     }
                 });
+    }
+
+    private void onLoadRecordingsSuccess(@NonNull List<Recording> recordings) {
+        if (getContext() == null) {
+            return; // user already exited
+        }
+        entries = FeedManager.getInstance(getContext()).getEntriesForRecordings(recordings);
+        if (entries.isEmpty()) { // TODO REMOVE THIS. SHOWING ALL LOCAL DATA WHEN THERE IS NO OTHER DATA
+            // Doing this while trying to debug create recording not working
+            entries = FeedManager.getInstance(getContext()).getAllEntries();
+        }
+        adapter.setEntries(entries);
+        showProgress(false);
     }
 
     public void notifyDataSetChanged() {

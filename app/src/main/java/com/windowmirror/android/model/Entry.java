@@ -97,6 +97,10 @@ public class Entry implements Serializable {
 
     public OxfordStatus getOxfordStatus() {
         if (transcriptions == null || transcriptions.isEmpty()) {
+            if (recording != null) {
+                // No local transcriptions but there is a recording entry ... implies past success
+                return OxfordStatus.SUCCESSFUL;
+            }
             return OxfordStatus.FAILED;
         }
 

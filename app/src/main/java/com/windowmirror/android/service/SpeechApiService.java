@@ -14,7 +14,6 @@ import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.model.Transcription;
-import com.windowmirror.android.util.LocalPrefs;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -165,7 +164,6 @@ public class SpeechApiService extends IntentService implements ISpeechRecognitio
 
     private void broadcastEntry() {
         if (entry != null) {
-            LocalPrefs.updateEntry(this, entry);
             final Intent localIntent =  new Intent(ACTION_ENTRY_UPDATED).putExtra(KEY_ENTRY, entry);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
