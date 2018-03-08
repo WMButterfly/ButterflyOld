@@ -33,7 +33,7 @@ public class SphynxService extends Service implements RecognitionListener {
     public static final String ACTION_START = "wmstart";
     public static final String ACTION_STOP = "wmstop";
     private static final String START_PHRASE = "hay butterfly";
-    private static final String STOP_PHRASE = "thank you butterfly";
+    private static final String STOP_PHRASE = "thanks butterfly";
     public static final String KEY_START = "wm1";
     public static final String KEY_STOP = "wm2";
     private SpeechRecognizer recognizer;
