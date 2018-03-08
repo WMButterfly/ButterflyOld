@@ -41,6 +41,9 @@
         <service android:name=".service.SpeechApiService" />
         <service android:name=".service.SphynxService" />
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="5ff0a3912c5e513fd9dc2d186a2653737371d038" />
     </application>
 
 </manifest>

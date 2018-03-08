@@ -9,9 +9,11 @@ import android.support.annotation.Nullable;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
 import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.result.Credentials;
+import com.crashlytics.android.Crashlytics;
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.service.BackendService;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Activity used to determine whether the user has authentication.
@@ -25,6 +27,7 @@ public final class SplashActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_splash);
         new Handler().postDelayed(new Runnable() {
             @Override
