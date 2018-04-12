@@ -16,6 +16,8 @@ import com.windowmirror.android.controller.MainActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
@@ -93,7 +95,7 @@ public class SphynxService extends Service implements RecognitionListener {
     private void setupRecognizer(File assetsDir) throws IOException {
         recognizer = defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
-                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
+                .setDictionary(new File(assetsDir, "cmudict-en-us.dict")) //TODO: Figure out why this is 'incomplete'
                 // To disable logging of raw audio comment out this call (takes a lot of space on the device)
 //                .setRawLogDir(assetsDir)
                 // Threshold to tune for keyphrase to balance between false alarms and misses
@@ -117,12 +119,23 @@ public class SphynxService extends Service implements RecognitionListener {
 
     }
 
+    private static final Pattern startPhrasePattern = Pattern.compile("(?i)h(a)?(e)?y (?i)butterfly");
+
     @Override
     public void onPartialResult(Hypothesis hypothesis) {
+
         if (hypothesis == null) {
             return;
         }
         final String text = hypothesis.getHypstr();
+
+        //TODO:  Use Soundex??
+        Matcher m = startPhrasePattern.matcher(text);
+        if (m.find()) {
+            openMainApp(true);
+            stopSelf();
+        }
+        /*
         if (text.equalsIgnoreCase(START_PHRASE)) {
             openMainApp(true);
             stopSelf();
@@ -132,6 +145,7 @@ public class SphynxService extends Service implements RecognitionListener {
             stopSelf();
 //            startRecognizer(KEY_START);
         }
+        */
     }
 
     @Override

@@ -211,7 +211,7 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    private void toggleRecording() {
+    private synchronized void toggleRecording() {
         final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.audio_fragment);
         if (fragment instanceof AudioRecordFragment) {
             final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
@@ -244,6 +244,8 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onEntryCreated(final Entry entry) {
+        Log.d ("butterfly", "onEntryCreated.");
+
         FeedManager.getInstance(this).addEntry(entry);
         final Fragment fragment = getFragmentInView();
         if (fragment instanceof FeedFragment) {
@@ -251,18 +253,25 @@ public class MainActivity extends FragmentActivity implements
         }
         // Show spinner while we send to backend... could potentially remove this but for now,
         // Preventing UI interaction while we sync with server
-        showProgressSpinner(true);
+        // showProgressSpinner(true);
+
+        Log.d ("butterfly", "Calling API:");
+
+        Recording recording = entry.toRecording();
+
         BackendService.getInstance()
                 .getApi()
                 .createRecording(entry.toRecording())
                 .enqueue(new BackendApiCallback<Recording>() {
                     @Override
                     public Context getContext() {
+                        Log.d(TAG, "Getting Callback Context...");
                         return getApplicationContext();
                     }
 
                     @Override
                     public void onSuccess(@NonNull Recording data) {
+                        Log.d(TAG, "Recording created with UUID: " + data.getUuid());
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "Recording created with UUID: " + data.getUuid());
                         }
@@ -283,7 +292,8 @@ public class MainActivity extends FragmentActivity implements
                         onSignOut();
                     }
                 });
-    }
+
+        }
 
     @Override
     public void onEntryUpdated(Entry entry) {
@@ -292,7 +302,9 @@ public class MainActivity extends FragmentActivity implements
         if (fragment instanceof FeedFragment) {
             ((FeedFragment) fragment).notifyDataSetChanged();
         }
-        Log.d(TAG, "Entry updated with status: " + entry.getOxfordStatus());
+        Log.d(TAG, "Entry updated. ");
+
+//        Log.d(TAG, "Entry updated with status: " + entry.getOxfordStatus());
 //        if (entry.getOxfordStatus() != SUCCESSFUL) {
 //            return; // Currently just going to wait until transcription is done before updating entry on server
 //            // Best case, server would be running the speech API, not the client...
@@ -310,6 +322,7 @@ public class MainActivity extends FragmentActivity implements
             // ^^ watch out for race condition if speech API comes back faster than our original create Recording call
         }
         recording.setTranscription(transcription);
+
         Log.d(TAG, "Updating entry with transcription:\n" + transcription);
         BackendService.getInstance()
                 .getApi()
@@ -355,16 +368,38 @@ public class MainActivity extends FragmentActivity implements
     }
 
     private void startSphynxService() {
-        if (!isServiceRunning(this)) {
+        while (!isServiceRunning(this)) {
+            Log.d ("butterfly", "Starting Sphynx Service..");
             startService(sphynxIntent = new Intent(getApplicationContext(), SphynxService.class));
+            if (!isServiceRunning(this)) {
+                Log.d("butterfly", "Service wasn't running ... sleeping.");
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 
     private void stopSphynxService() {
-        if (sphynxIntent != null) {
-            stopService(sphynxIntent);
-        } else { // Need to create an Intent...
-            stopService(new Intent(getApplicationContext(), SphynxService.class));
+        while (isServiceRunning(this)) {
+            Log.d ("butterfly", "Stopping Sphynx Service...");
+            if (sphynxIntent != null) {
+                stopService(sphynxIntent);
+            } else { // Need to create an Intent...
+                stopService(new Intent(getApplicationContext(), SphynxService.class));
+            }
+            if (isServiceRunning(this)) {
+                Log.d("butterfly", "Service was running ... sleeping.");
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 

@@ -25,4 +25,7 @@
     <string name="about">About Butterfly</string>
     <string name="recordings_empty_message">No Recordings Found. Touch the butterfly to get started now.</string>
 
+    <string name="primarySubscriptionKey">13a46e7d44744c599aaa753acad3dbf0</string>
+    <string name="luisAppID"></string>
+    <string name="luisSubscriptionID"></string>
 </resources>

@@ -2,6 +2,7 @@ package com.windowmirror.android.model;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.windowmirror.android.model.service.Recording;
 
@@ -130,11 +131,13 @@ public class Entry implements Serializable {
      * Only meant to be used when first creating the Server Object.
      */
     public Recording toRecording() {
-        return new Recording.Builder()
+        Recording built = new Recording.Builder()
                 .date(timestamp)
                 .transcript(getFullTranscription())
 //                .length(duration) // FIXME have server switch length/duration field to type long
                 .build();
+        Log.d("butterfly", "Built recording with transcript: " + built.getTranscript());
+        return built;
     }
 
     /**
