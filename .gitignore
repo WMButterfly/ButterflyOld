@@ -34,3 +34,6 @@ captures/
 
 # Intellij
 .idea
+
+#md5 assets
+app/assets/sync/**/*.md5
