@@ -1,6 +1,7 @@
 # Built application files
 *.apk
 *.ap_
+app.iml
 
 # Files for the ART/Dalvik VM
 *.dex
@@ -33,7 +34,7 @@ proguard/
 captures/
 
 # Intellij
-.idea
+.idea/**
 
 #md5 assets
 app/assets/sync/**/*.md5
