@@ -1,5 +1,7 @@
 package com.windowmirror.android.feed.detail;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +10,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -19,6 +23,7 @@ import com.windowmirror.android.model.OxfordStatus;
 import view.ViewUtility;
 import view.navigation.ButterflyToolbar;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
 import static com.windowmirror.android.model.OxfordStatus.PENDING;
 import static com.windowmirror.android.model.OxfordStatus.REQUIRES_RETRY;
 
@@ -45,6 +50,15 @@ public class FeedDetailFragment extends Fragment {
         return fragment;
     }
 
+
+    // Method to hide the soft keyboard
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager)view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,6 +67,16 @@ public class FeedDetailFragment extends Fragment {
             mEntry = (Entry) getArguments().getSerializable(KEY_ENTRY);
         }
         mTranscriptionView = layout.findViewById(R.id.transcription);
+        // Sets the onFocusChangeListener of the transcription edit text
+        mTranscriptionView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(view);
+                }
+            }
+        });
+
         mDuration = layout.findViewById(R.id.length);
         mDate = layout.findViewById(R.id.date);
         mTime = layout.findViewById(R.id.time);
@@ -73,6 +97,7 @@ public class FeedDetailFragment extends Fragment {
         if (getActivity() instanceof NavigationListener) {
             ((NavigationListener) getActivity()).showToolbar(true);
             ((NavigationListener) getActivity()).setToolbarState(ButterflyToolbar.State.PAGE_UP);
+            hideKeyboard(mTranscriptionView);
         }
     }
 
@@ -80,6 +105,7 @@ public class FeedDetailFragment extends Fragment {
     public void onPause() {
         super.onPause();
         saveEntryChanges();
+        hideKeyboard(mTranscriptionView);
     }
 
     private void displayEntry() {
@@ -100,6 +126,7 @@ public class FeedDetailFragment extends Fragment {
         mDate.setText(ViewUtility.formatDate(mEntry.getTimestamp()));
         mTime.setText(ViewUtility.formatTime(mEntry.getTimestamp()));
         mDuration.setText(ViewUtility.formatDuration(mEntry.getDuration()));
+        hideKeyboard(mTranscriptionView);
     }
 
     private void onShareClick() {
@@ -109,9 +136,12 @@ public class FeedDetailFragment extends Fragment {
         startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_title)));
     }
 
+
+
     private void saveEntryChanges() {
         if (mCanEdit) {
             mEntry.setFullTranscription(mTranscriptionView.getText().toString());
+            hideKeyboard(mTranscriptionView);
         }
     }
 }
