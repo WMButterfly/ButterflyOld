@@ -76,8 +76,17 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
         transitive = true
     }
+    compile('com.crashlytics.sdk.android:crashlytics-ndk:2.0.4@aar') {
+        transitive = true;
+    }
 }
 
 ant.importBuild 'assets.xml'
 preBuild.dependsOn(list, checksum)
 clean.dependsOn(clean_assets)
+
+crashlytics {
+    enableNdk true
+    androidNdkOut 'src\\main\\obj'
+    androidNdkLibsOut 'src/main/libs'
+}

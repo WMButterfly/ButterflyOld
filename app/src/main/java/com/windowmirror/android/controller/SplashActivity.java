@@ -10,6 +10,7 @@ import com.auth0.android.authentication.storage.CredentialsManagerException;
 import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.result.Credentials;
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.ndk.CrashlyticsNdk;
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
 import com.windowmirror.android.service.BackendService;
@@ -27,7 +28,7 @@ public final class SplashActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+        Fabric.with(this, new Crashlytics(), new CrashlyticsNdk());
         setContentView(R.layout.activity_splash);
         new Handler().postDelayed(new Runnable() {
             @Override
