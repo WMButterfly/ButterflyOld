@@ -1,12 +1,12 @@
 package com.windowmirror.android.feed.detail;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +23,6 @@ import com.windowmirror.android.model.OxfordStatus;
 import view.ViewUtility;
 import view.navigation.ButterflyToolbar;
 
-import static android.content.Context.INPUT_METHOD_SERVICE;
 import static com.windowmirror.android.model.OxfordStatus.PENDING;
 import static com.windowmirror.android.model.OxfordStatus.REQUIRES_RETRY;
 
@@ -58,7 +57,6 @@ public class FeedDetailFragment extends Fragment {
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -67,7 +65,13 @@ public class FeedDetailFragment extends Fragment {
             mEntry = (Entry) getArguments().getSerializable(KEY_ENTRY);
         }
         mTranscriptionView = layout.findViewById(R.id.transcription);
+
+        // Sets the soft keyboard's return button to a done button that dismisses the keyboard
+        mTranscriptionView.setInputType(InputType.TYPE_CLASS_TEXT);
+        mTranscriptionView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+
         // Sets the onFocusChangeListener of the transcription edit text
+        // if the focus changes to another view the keyboard will disappear
         mTranscriptionView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
