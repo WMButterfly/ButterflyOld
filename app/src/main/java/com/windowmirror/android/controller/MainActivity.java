@@ -23,6 +23,8 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.R;
@@ -105,7 +107,10 @@ public class MainActivity extends FragmentActivity implements
                 // consume clicks
             }
         });
+
     }
+
+
 
     private void setupNavigation() {
         toolbar = findViewById(R.id.toolbar);

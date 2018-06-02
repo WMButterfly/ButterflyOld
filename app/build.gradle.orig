@@ -29,7 +29,11 @@ android {
         resValue "string", "app_name", "Butterfly"
         minSdkVersion 19
         targetSdkVersion 27
+<<<<<<< HEAD
+        versionCode  12
+=======
         versionCode 12
+>>>>>>> pre-demo-ui-tweaks
         versionName "2.5"
 
         buildConfigField 'String', 'API_URL', "\"${props.apiUrl}\""
