@@ -71,7 +71,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private ImageView play;
+        //private ImageView play;
         private TextView date;
         private TextView time;
         private TextView length;
@@ -79,7 +79,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         ViewHolder(final View itemView) {
             super(itemView);
+            /* temporarily remove play button until we can send the audio to the server to save
             play = itemView.findViewById(R.id.play);
+            */
             date = itemView.findViewById(R.id.date);
             time = itemView.findViewById(R.id.time);
             length = itemView.findViewById(R.id.length);
@@ -94,6 +96,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             length.setText(ViewUtility.formatDuration(entry.getDuration()));
             final boolean isPlaying = listener.isEntryPlaying(entry);
             @DrawableRes int drawable = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+            /*
+            temporarily remove play button until we can send the audio to the server to save
             play.setImageResource(drawable);
             play.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -101,6 +105,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                     listener.onPausePlay(entry);
                 }
             });
+            */
             transcription.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
