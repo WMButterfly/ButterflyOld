@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -67,7 +68,6 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
             // Ensure necessary directories are created
             FileUtility.makeDirectories();
         }
-
         // Initialize record button listener
         recordButton = layout.findViewById(R.id.button_record);
         recordButton.setColorFilter(getResources().getColor(R.color.royal), PorterDuff.Mode.SRC_ATOP);
