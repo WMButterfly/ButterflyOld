@@ -30,6 +30,8 @@
 
         <!-- Do not enable automatically: to ensure compliance with Google Play policy,
              should not record user until they have explicitly accepted some sort of privacy terms -->
+
+        <!-- commented out to remove always listening
         <receiver
             android:name=".service.BootReceiver"
             android:enabled="false">
@@ -37,6 +39,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        -->
 
         <service android:name=".service.SpeechApiService" />
         <service android:name=".service.SphynxService" />

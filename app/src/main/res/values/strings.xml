@@ -24,8 +24,8 @@
     <string name="share_title">Share with...</string>
     <string name="about">About Butterfly</string>
     <string name="recordings_empty_message">No Recordings Found. Touch the butterfly to get started now.</string>
-
-    <string name="primarySubscriptionKey">13a46e7d44744c599aaa753acad3dbf0</string>
+    <string name="authenticationUri"></string>
+    <string name="primarySubscriptionKey">58b60b52d58b4a1ba5da81b91b825d7f</string>
     <string name="luisAppID"></string>
     <string name="luisSubscriptionID"></string>
 </resources>

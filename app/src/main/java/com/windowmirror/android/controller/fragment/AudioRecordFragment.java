@@ -498,7 +498,7 @@ public class AudioRecordFragment extends Fragment implements AudioRecorder.Audio
      * @return The Cognitive Service Authentication Uri.  Empty if the global default is to be used.
      */
     private String getAuthenticationUri() {
-        return "";
+        return this.getString(R.string.authenticationUri);
     }
 
     /**

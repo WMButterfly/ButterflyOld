@@ -41,7 +41,8 @@ import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.model.service.Recording;
 import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
-import com.windowmirror.android.service.BootReceiver;
+//commented out to disable always listening
+//import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.SpeechApiService;
 import com.windowmirror.android.service.SphynxService;
 import com.windowmirror.android.util.LocalPrefs;
@@ -158,12 +159,14 @@ public class MainActivity extends FragmentActivity implements
         LocalBroadcastManager.getInstance(this).registerReceiver(sphynxBroadcastReceiver, intentFilterSphynxStop);
     }
 
+    /* commented out to disable always listening.
     @Override
     protected void onResume() {
         super.onResume();
 
         // TODO For Play Store: add Privacy Terms and have user accept them before starting Service
         // TODO When the above is added, you may want to set default value for background service to "false" in LocalPrefs
+
         BootReceiver.enable(this);
 
         final Bundle extras = getIntent().getExtras();
@@ -175,7 +178,7 @@ public class MainActivity extends FragmentActivity implements
             startSphynxService();
         }
         queueEntriesForRetry();
-    }
+    }*/
 
     @Override
     protected void onPause() {
@@ -183,12 +186,14 @@ public class MainActivity extends FragmentActivity implements
         // Ensure Entries are stored before going to background
         FeedManager.getInstance(this).storeEntries();
 
+        /* commented out to remove always listening feature
         // Stop or start sphynx service depending on settings
         if (LocalPrefs.getIsBackgroundService(this)) {
             startSphynxService();
         } else {
             stopSphynxService();
         }
+        */
     }
 
     @Override
