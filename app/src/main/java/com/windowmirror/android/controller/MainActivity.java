@@ -267,7 +267,7 @@ public class MainActivity extends FragmentActivity implements
 
         Log.d ("butterfly", "Calling API:");
 
-        Recording recording = entry.toRecording();
+        //Recording recording = entry.toRecording();
 
         BackendService.getInstance()
                 .getApi()
