@@ -1,3 +1,7 @@
+/* temporarily removing this to disable always listening and stop disabling other apps from using microphone.
+also, as of API 26 or higher there are restrictions on background services when the app itself isn't in the foreground. In most cases like this, your app should use a scheduled job instead.
+https://developer.android.com/guide/components/services
+
 package com.windowmirror.android.service;
 
 import android.app.Service;
@@ -26,10 +30,6 @@ import edu.cmu.pocketsphinx.SpeechRecognizer;
 
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
-/**
- * Service Class which runs Pocket Sphynx.
- * @author alliecurry
- */
 public class SphynxService extends Service implements RecognitionListener {
     private static final String TAG = SphynxService.class.getSimpleName();
     public static final String ACTION_START = "wmstart";
@@ -135,7 +135,7 @@ public class SphynxService extends Service implements RecognitionListener {
             openMainApp(true);
             stopSelf();
         }
-        /*
+
         if (text.equalsIgnoreCase(START_PHRASE)) {
             openMainApp(true);
             stopSelf();
@@ -145,7 +145,7 @@ public class SphynxService extends Service implements RecognitionListener {
             stopSelf();
 //            startRecognizer(KEY_START);
         }
-        */
+
     }
 
     @Override
@@ -201,3 +201,4 @@ public class SphynxService extends Service implements RecognitionListener {
         startActivity(intent);
     }
 }
+*/
