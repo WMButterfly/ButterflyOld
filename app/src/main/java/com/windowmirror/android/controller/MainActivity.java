@@ -44,7 +44,8 @@ import com.windowmirror.android.service.BackendService;
 //commented out to disable always listening
 //import com.windowmirror.android.service.BootReceiver;
 import com.windowmirror.android.service.SpeechApiService;
-import com.windowmirror.android.service.SphynxService;
+//commented out to disable always listening
+//import com.windowmirror.android.service.SphynxService;
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
 
@@ -150,6 +151,7 @@ public class MainActivity extends FragmentActivity implements
         final IntentFilter intentFilterOxford = new IntentFilter(SpeechApiService.ACTION_ENTRY_UPDATED);
         LocalBroadcastManager.getInstance(this).registerReceiver(new EntryBroadcastReceiver(), intentFilterOxford);
 
+        /* commented out to disable always listening
         // Sphynx Broadcasts
         final SphynxBroadcastReceiver sphynxBroadcastReceiver = new SphynxBroadcastReceiver();
         final IntentFilter intentFilterSphynxStart = new IntentFilter(SphynxService.ACTION_START);
@@ -157,6 +159,7 @@ public class MainActivity extends FragmentActivity implements
 
         LocalBroadcastManager.getInstance(this).registerReceiver(sphynxBroadcastReceiver, intentFilterSphynxStart);
         LocalBroadcastManager.getInstance(this).registerReceiver(sphynxBroadcastReceiver, intentFilterSphynxStop);
+        */
     }
 
     /* commented out to disable always listening.
@@ -227,7 +230,9 @@ public class MainActivity extends FragmentActivity implements
             final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
             showRecordingFragment(isRecording);
             if (!isRecording) { // We don't want to start the service if we just began recording
-                startSphynxService();
+                // commented out while disabling always listening.
+                // we don't want to listen in a service while the app is in the foreground.
+                //startSphynxService();
             }
         }
     }
@@ -366,72 +371,76 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onRecordStart() {
-        stopSphynxService();
+        // commented out while disabling always listening.
+        // we don't want to listen in a service while the app is in the foreground.
+        //stopSphynxService();
         lockOrientation();
     }
 
     @Override
     public void onRecordStop() {
-        startSphynxService();
+        // commented out while disabling always listening.
+        // we don't want to listen in a service while the app is in the foreground.
+        // startSphynxService();
         unlockOrientation();
         showRecordingFragment(false);
     }
 
-    private void startSphynxService() {
-        while (!isServiceRunning(this)) {
-            Log.d ("butterfly", "Starting Sphynx Service..");
-            startService(sphynxIntent = new Intent(getApplicationContext(), SphynxService.class));
-            if (!isServiceRunning(this)) {
-                Log.d("butterfly", "Service wasn't running ... sleeping.");
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+    /* commented out to disable always listening and prevent butterfly from stealing the microphone from other apps.
+        private void startSphynxService() {
+            while (!isServiceRunning(this)) {
+                Log.d ("butterfly", "Starting Sphynx Service..");
+                startService(sphynxIntent = new Intent(getApplicationContext(), SphynxService.class));
+                if (!isServiceRunning(this)) {
+                    Log.d("butterfly", "Service wasn't running ... sleeping.");
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }
+
+        private void stopSphynxService() {
+            while (isServiceRunning(this)) {
+                Log.d ("butterfly", "Stopping Sphynx Service...");
+                if (sphynxIntent != null) {
+                    stopService(sphynxIntent);
+                } else { // Need to create an Intent...
+                    stopService(new Intent(getApplicationContext(), SphynxService.class));
+                }
+                if (isServiceRunning(this)) {
+                    Log.d("butterfly", "Service was running ... sleeping.");
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
         }
-    }
-
-    private void stopSphynxService() {
-        while (isServiceRunning(this)) {
-            Log.d ("butterfly", "Stopping Sphynx Service...");
-            if (sphynxIntent != null) {
-                stopService(sphynxIntent);
-            } else { // Need to create an Intent...
-                stopService(new Intent(getApplicationContext(), SphynxService.class));
-            }
-            if (isServiceRunning(this)) {
-                Log.d("butterfly", "Service was running ... sleeping.");
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+      */
+        public void replaceFragment(@NonNull Fragment fragment,
+                                    @NonNull String tag,
+                                    boolean addToStack) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            try {
+                transaction.replace(R.id.fragment_frame_layout, fragment, tag);
+                if (addToStack) {
+                    transaction.addToBackStack(null);
                 }
+                transaction.commit();
+            } catch (final IllegalStateException e) {
+                // Thrown if the user exists the app during this operation
+                Log.e(TAG, String.format("Failed to display Fragment %s:\n%s", tag, e.getMessage()));
             }
-
         }
-    }
 
-    public void replaceFragment(@NonNull Fragment fragment,
-                                @NonNull String tag,
-                                boolean addToStack) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        try {
-            transaction.replace(R.id.fragment_frame_layout, fragment, tag);
-            if (addToStack) {
-                transaction.addToBackStack(null);
-            }
-            transaction.commit();
-        } catch (final IllegalStateException e) {
-            // Thrown if the user exists the app during this operation
-            Log.e(TAG, String.format("Failed to display Fragment %s:\n%s", tag, e.getMessage()));
-        }
-    }
-
-    /**
-     * @return The Fragment currently shown in the main area (if any)
-     */
+        /**
+         * @return The Fragment currently shown in the main area (if any)
+         */
     @Nullable
     public Fragment getFragmentInView() {
         return getSupportFragmentManager().findFragmentById(R.id.fragment_frame_layout);
@@ -501,6 +510,9 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    /*
+    // commented out while disabling always listening.
+    // we don't want to listen in a service while the app is in the foreground.
     private static boolean isServiceRunning(final Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -511,6 +523,7 @@ public class MainActivity extends FragmentActivity implements
         }
         return false;
     }
+    */
 
     /**
      * Allows the user to rotate their screen
