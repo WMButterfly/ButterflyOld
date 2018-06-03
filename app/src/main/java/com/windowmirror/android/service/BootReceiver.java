@@ -1,4 +1,4 @@
-/* commented out to disable always listening.
+/* commented out to disable always listening. */
 
 package com.windowmirror.android.service;
 
@@ -33,4 +33,4 @@ public class BootReceiver extends BroadcastReceiver {
     }
 
 }
-end disable */
+/* end disable */

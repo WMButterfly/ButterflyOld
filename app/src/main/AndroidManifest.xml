@@ -11,8 +11,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!--
     Commented out to remove always listening feature.
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -40,7 +41,7 @@
         <!-- Do not enable automatically: to ensure compliance with Google Play policy,
              should not record user until they have explicitly accepted some sort of privacy terms -->
 
-        <!-- commented out to remove always listening
+        <!-- commented out to remove always listening -->
         <receiver
             android:name=".service.BootReceiver"
             android:enabled="false">
@@ -48,12 +49,12 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        end disable -->
+        <!-- end disable -->
 
         <service android:name=".service.SpeechApiService" />
-        <!-- commented out to remove always listening
+        <!-- commented out to remove always listening -->
         <service android:name=".service.SphynxService" />
-        end disable -->
+        <!--  end disable -->
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="5ff0a3912c5e513fd9dc2d186a2653737371d038" />

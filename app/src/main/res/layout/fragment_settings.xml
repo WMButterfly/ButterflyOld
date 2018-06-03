@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="16dp">
 
-    <!-- commented out to remove always listening
+    <!-- commented out to remove always listening -->
     <Switch
         android:id="@+id/service_checkbox"
         android:layout_width="match_parent"
@@ -15,5 +15,5 @@
         android:fontFamily="@font/lato_regular"
         android:text="@string/always_listening"
         android:textColor="@color/primary_color_dark" />
-    end disable -->
+    <!-- end disable -->
 </LinearLayout>

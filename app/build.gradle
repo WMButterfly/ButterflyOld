@@ -29,8 +29,8 @@ android {
         resValue "string", "app_name", "Butterfly"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 18
-        versionName "2.6.5"
+        versionCode 19
+        versionName "2.6.6"
 
         buildConfigField 'String', 'API_URL', "\"${props.apiUrl}\""
         buildConfigField 'String', 'SPEECH_SUBSCRIPTION_KEY', "\"${props.speechKey}\""
