@@ -15,5 +15,5 @@
         android:fontFamily="@font/lato_regular"
         android:text="@string/always_listening"
         android:textColor="@color/primary_color_dark" />
-    -->
+    end disable -->
 </LinearLayout>

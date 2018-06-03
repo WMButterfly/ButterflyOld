@@ -41,20 +41,21 @@ import com.windowmirror.android.model.OxfordStatus;
 import com.windowmirror.android.model.service.Recording;
 import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
-//commented out to disable always listening
-//import com.windowmirror.android.service.BootReceiver;
+/* commented out to disable always listening
+import com.windowmirror.android.service.BootReceiver;
+end disable */
 import com.windowmirror.android.service.SpeechApiService;
-//commented out to disable always listening
-//import com.windowmirror.android.service.SphynxService;
+/* commented out to disable always listening
+import com.windowmirror.android.service.SphynxService;
+end disable */
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
-
 import net.danlew.android.joda.JodaTimeAndroid;
-
 import java.util.Locale;
-
 import view.navigation.ButterflyToolbar;
 import view.navigation.UserHeaderView;
+import com.google.android.gms.actions.NoteIntents;
+//import com.google.android.gms.common.api.GoogleApiClient;
 
 import static com.windowmirror.android.service.SpeechApiService.KEY_ENTRY;
 
@@ -90,7 +91,7 @@ public class MainActivity extends FragmentActivity implements
         JodaTimeAndroid.init(this);
         setupNavigation();
         showFeedFragment();
-        showRecordingFragment(false);
+
         findViewById(R.id.sign_out).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,10 +110,38 @@ public class MainActivity extends FragmentActivity implements
                 // consume clicks
             }
         });
-
+        Log.d ("butterfly", "inside onCreate!");
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+        if (intent != null) {
+            Log.d ("butterfly", "started with intent. Action=" + action + " Type="+type + ".");
+            if (NoteIntents.ACTION_CREATE_NOTE.equals(action)) {
+                Log.d ("butterfly", "started with intent to record.");
+                showRecordingFragment(true);
+            }
+        } else {
+            Log.d ("butterfly", "started without intent.");
+        }
     }
 
-
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        Log.d ("butterfly", "inside onNewIntent");
+        String action = intent.getAction();
+        String type = intent.getType();
+        if (intent != null) {
+            Log.d ("butterfly", "started with intent. Action=" + action + " Type="+type + ".");
+            if (NoteIntents.ACTION_CREATE_NOTE.equals(action)) {
+                Log.d ("butterfly", "started with intent to record.");
+                showRecordingFragment(true);
+            }
+        } else {
+            Log.d ("butterfly", "started without intent.");
+        }
+    }
 
     private void setupNavigation() {
         toolbar = findViewById(R.id.toolbar);
@@ -159,7 +188,7 @@ public class MainActivity extends FragmentActivity implements
 
         LocalBroadcastManager.getInstance(this).registerReceiver(sphynxBroadcastReceiver, intentFilterSphynxStart);
         LocalBroadcastManager.getInstance(this).registerReceiver(sphynxBroadcastReceiver, intentFilterSphynxStop);
-        */
+        end disable */
     }
 
     /* commented out to disable always listening.
@@ -181,7 +210,8 @@ public class MainActivity extends FragmentActivity implements
             startSphynxService();
         }
         queueEntriesForRetry();
-    }*/
+    }
+    end disable */
 
     @Override
     protected void onPause() {
@@ -196,7 +226,7 @@ public class MainActivity extends FragmentActivity implements
         } else {
             stopSphynxService();
         }
-        */
+        end disable */
     }
 
     @Override
@@ -230,9 +260,10 @@ public class MainActivity extends FragmentActivity implements
             final boolean isRecording = ((AudioRecordFragment) fragment).toggleRecording();
             showRecordingFragment(isRecording);
             if (!isRecording) { // We don't want to start the service if we just began recording
-                // commented out while disabling always listening.
+                /* commented out while disabling always listening.
                 // we don't want to listen in a service while the app is in the foreground.
-                //startSphynxService();
+                startSphynxService();
+                end disable */
             }
         }
     }
@@ -371,17 +402,20 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onRecordStart() {
-        // commented out while disabling always listening.
+        /* commented out while disabling always listening.
         // we don't want to listen in a service while the app is in the foreground.
-        //stopSphynxService();
+        stopSphynxService();
+        end disable */
         lockOrientation();
+
     }
 
     @Override
     public void onRecordStop() {
-        // commented out while disabling always listening.
+        /* commented out while disabling always listening.
         // we don't want to listen in a service while the app is in the foreground.
-        // startSphynxService();
+        startSphynxService();
+        end disable */
         unlockOrientation();
         showRecordingFragment(false);
     }
@@ -421,7 +455,8 @@ public class MainActivity extends FragmentActivity implements
                 }
             }
         }
-      */
+        end disable */
+
         public void replaceFragment(@NonNull Fragment fragment,
                                     @NonNull String tag,
                                     boolean addToStack) {
@@ -510,9 +545,9 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    /*
-    // commented out while disabling always listening.
+    /* commented out while disabling always listening.
     // we don't want to listen in a service while the app is in the foreground.
+
     private static boolean isServiceRunning(final Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -523,7 +558,7 @@ public class MainActivity extends FragmentActivity implements
         }
         return false;
     }
-    */
+    end disable */
 
     /**
      * Allows the user to rotate their screen

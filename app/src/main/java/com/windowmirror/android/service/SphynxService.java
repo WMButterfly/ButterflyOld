@@ -201,4 +201,4 @@ public class SphynxService extends Service implements RecognitionListener {
         startActivity(intent);
     }
 }
-*/
+end disable */

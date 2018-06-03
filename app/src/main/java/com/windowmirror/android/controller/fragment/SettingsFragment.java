@@ -28,7 +28,7 @@ public class SettingsFragment extends Fragment implements CompoundButton.OnCheck
         final CompoundButton serviceCheckBox = (CompoundButton) v.findViewById(R.id.service_checkbox);
         serviceCheckBox.setChecked(LocalPrefs.getIsBackgroundService(getContext()));
         serviceCheckBox.setOnCheckedChangeListener(this);
-        */
+        end disable */
         return v;
     }
 
