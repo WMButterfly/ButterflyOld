@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ public class FeedDetailFragment extends Fragment {
     private TextView mTime;
     private View mShareButton;
 
+
     private boolean mCanEdit;
 
     public static FeedDetailFragment create(@NonNull Entry entry) {
@@ -51,11 +53,23 @@ public class FeedDetailFragment extends Fragment {
 
 
     // Method to hide the soft keyboard
-    public void hideKeyboard(View view) {
+    public void hideKeyboard(EditText editText) {
         InputMethodManager inputMethodManager =
-                (InputMethodManager)view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                (InputMethodManager)editText.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
+
+    // Method to hide the cursor
+    public void hideCursor(EditText editText) {
+        editText.setCursorVisible(false);
+    }
+
+    // Method to show the cursor
+    public void showCursor(EditText editText) {
+        editText.setCursorVisible(true);
+    }
+
+
 
     @Nullable
     @Override
@@ -65,10 +79,33 @@ public class FeedDetailFragment extends Fragment {
             mEntry = (Entry) getArguments().getSerializable(KEY_ENTRY);
         }
         mTranscriptionView = layout.findViewById(R.id.transcription);
-
         // Sets the soft keyboard's return button to a done button that dismisses the keyboard
-        mTranscriptionView.setInputType(InputType.TYPE_CLASS_TEXT);
+        mTranscriptionView.setRawInputType(EditorInfo.TYPE_CLASS_TEXT);
         mTranscriptionView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+
+
+
+        mTranscriptionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (view.getId() == mTranscriptionView.getId()) {
+                    showCursor(mTranscriptionView);
+                }
+            }
+        });
+        // Event handler for the done button on the soft keyboard
+        // If user clicks done, the cursor along with the keyboard disappear
+        mTranscriptionView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(mTranscriptionView);
+                    hideCursor(mTranscriptionView);
+                    return true;
+                }
+                return false;
+            }
+        });
 
         // Sets the onFocusChangeListener of the transcription edit text
         // if the focus changes to another view the keyboard will disappear
@@ -76,7 +113,8 @@ public class FeedDetailFragment extends Fragment {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (!hasFocus) {
-                    hideKeyboard(view);
+                    hideKeyboard(mTranscriptionView);
+                    hideCursor(mTranscriptionView);
                 }
             }
         });
@@ -101,7 +139,6 @@ public class FeedDetailFragment extends Fragment {
         if (getActivity() instanceof NavigationListener) {
             ((NavigationListener) getActivity()).showToolbar(true);
             ((NavigationListener) getActivity()).setToolbarState(ButterflyToolbar.State.PAGE_UP);
-            hideKeyboard(mTranscriptionView);
         }
     }
 
@@ -109,7 +146,6 @@ public class FeedDetailFragment extends Fragment {
     public void onPause() {
         super.onPause();
         saveEntryChanges();
-        hideKeyboard(mTranscriptionView);
     }
 
     private void displayEntry() {
@@ -130,7 +166,6 @@ public class FeedDetailFragment extends Fragment {
         mDate.setText(ViewUtility.formatDate(mEntry.getTimestamp()));
         mTime.setText(ViewUtility.formatTime(mEntry.getTimestamp()));
         mDuration.setText(ViewUtility.formatDuration(mEntry.getDuration()));
-        hideKeyboard(mTranscriptionView);
     }
 
     private void onShareClick() {
@@ -145,7 +180,6 @@ public class FeedDetailFragment extends Fragment {
     private void saveEntryChanges() {
         if (mCanEdit) {
             mEntry.setFullTranscription(mTranscriptionView.getText().toString());
-            hideKeyboard(mTranscriptionView);
         }
     }
 }
