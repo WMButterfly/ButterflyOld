@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -91,16 +92,18 @@ public class FeedDetailFragment extends Fragment {
 
 
 
+
         // Event handler to handle when user clicks on the EditText view
         mTranscriptionView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (view.getId() == mTranscriptionView.getId()) {
+                showCursor(mTranscriptionView);
 
-                    showCursor(mTranscriptionView);
-                }
+
             }
         });
+
+
         // Event handler for the done button on the soft keyboard
         // If user clicks done, the cursor along with the keyboard disappear
         mTranscriptionView.setOnKeyListener(new View.OnKeyListener() {
