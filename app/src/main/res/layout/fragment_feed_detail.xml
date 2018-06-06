@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,15 +23,17 @@
             android:background="@drawable/bg_feed_item"
             android:clickable="true"
             android:focusable="true"
-            android:cursorVisible="false"
+            android:cursorVisible="true"
             android:fontFamily="@font/lato_regular"
             android:imeOptions="actionDone"
             android:inputType="textCapSentences|textAutoCorrect|textMultiLine"
-            android:scrollbars="vertical"
             android:textSize="18sp"
+            android:singleLine="false"
+            android:overScrollMode="always"
+            android:scrollbarStyle="insideInset"
+            android:scrollbars="vertical"
             android:verticalScrollbarPosition="right"
             tools:text="Art school is where I’d meet my sister each Wednesday, and then, the two of us would travel, by cab, to couple’s counseling. Although Jane and I were twins, by the age of nineteen, she was already two years ahead of me in school, and because both of our parents were psychiatrists, and because I had been diagnosed with a rare social disorder, a disorder of my parent’s own invention, Jane and I were forced to undergo couple’s therapy every Wednesday afternoon. The counseling sessions were ninety minutes long and held in a dentist’s office. As both of my parents were well-known in their field, they had a difficult time finding a colleague to analyze their children,For me, almost everything starts off as a short story. All of my novels have been built around material that’s been explored or published as short stories, because it forces me to get to the character and action quickly, and helps me figure out what the story is actually about. I usually write a few short stories and realize that they feature similar questions or characters " />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +71,6 @@
                 android:textSize="12sp"
                 tools:text="8:48pm" />
         </LinearLayout>
-
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/share"
             android:layout_width="wrap_content"
@@ -77,4 +79,4 @@
             android:layout_gravity="end"
             android:src="@drawable/ic_share" />
     </LinearLayout>
-</ScrollView>
+</android.support.v4.widget.NestedScrollView>

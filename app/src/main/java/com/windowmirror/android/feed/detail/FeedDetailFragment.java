@@ -2,13 +2,17 @@ package com.windowmirror.android.feed.detail;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.drm.DrmStore;
+import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -57,6 +61,7 @@ public class FeedDetailFragment extends Fragment {
         InputMethodManager inputMethodManager =
                 (InputMethodManager)editText.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        hideCursor(mTranscriptionView);
     }
 
     // Method to hide the cursor
@@ -79,20 +84,26 @@ public class FeedDetailFragment extends Fragment {
             mEntry = (Entry) getArguments().getSerializable(KEY_ENTRY);
         }
         mTranscriptionView = layout.findViewById(R.id.transcription);
+        mTranscriptionView.setOnEditorActionListener
+                (new DoneOnEditorActionListener());
         // Sets the soft keyboard's return button to a done button that dismisses the keyboard
-        mTranscriptionView.setRawInputType(EditorInfo.TYPE_CLASS_TEXT);
         mTranscriptionView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        mTranscriptionView.setRawInputType(EditorInfo.TYPE_CLASS_TEXT);
 
 
 
+
+        // Event handler to handle when user clicks on the EditText view
         mTranscriptionView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (view.getId() == mTranscriptionView.getId()) {
-                    showCursor(mTranscriptionView);
-                }
+                showCursor(mTranscriptionView);
+
+
             }
         });
+
+
         // Event handler for the done button on the soft keyboard
         // If user clicks done, the cursor along with the keyboard disappear
         mTranscriptionView.setOnKeyListener(new View.OnKeyListener() {
