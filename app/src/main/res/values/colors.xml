@@ -11,5 +11,5 @@
     <color name="primary_color_dark_alpha_80">#CC4A4A4A</color>
     <color name="accent_color">@color/royal</color>
     <color name="accent_color_dark">@color/royal_dark</color>
-
+    <color name="bg_row_background">#fa315b</color>
 </resources>

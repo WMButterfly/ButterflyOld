@@ -5,5 +5,6 @@
     <dimen name="list_item_padding">16dp</dimen>
     
     <dimen name="button_radius">8dp</dimen>
-
+    <dimen name="padd_10">10dp</dimen>
+    <dimen name="ic_delete">30dp</dimen>
 </resources>

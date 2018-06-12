@@ -1,14 +1,18 @@
 package com.windowmirror.android.feed;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,11 +23,14 @@ import com.windowmirror.android.R;
 import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.service.Recording;
+import com.windowmirror.android.service.BackendApi;
 import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Response;
 import view.SpacesItemDecoration;
 import view.navigation.ButterflyToolbar;
 
@@ -32,7 +39,7 @@ import view.navigation.ButterflyToolbar;
  *
  * @author alliecurry
  */
-public class FeedFragment extends Fragment implements FeedAdapter.Listener {
+public class FeedFragment extends Fragment implements FeedAdapter.Listener, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
     public static final String TAG = FeedFragment.class.getSimpleName();
     private FeedAdapter adapter;
     private List<Entry> entries;
@@ -41,6 +48,7 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
     private Entry playingEntry;
     private boolean isAudioPlaying = false;
     private RecyclerView recyclerView;
+    private CoordinatorLayout coordinatorLayout;
     private View progressSpinner;
     private View emptyView;
 
@@ -56,6 +64,10 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
         recyclerView.addItemDecoration(new SpacesItemDecoration(getResources()
                 .getDimensionPixelSize(R.dimen.list_item_padding)));
         recyclerView.setAdapter(adapter);
+
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+
         if (entries != null && !entries.isEmpty()) {
             adapter.setEntries(entries);
             emptyView.setVisibility(View.GONE);
@@ -114,6 +126,36 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener {
                         }
                     }
                 });
+    }
+
+
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if (viewHolder instanceof FeedAdapter.ViewHolder) {
+            // get the removed item name to display it in snack bar
+            final String name = entries.get(viewHolder.getAdapterPosition()).getUuid();
+
+            // backup of removed item for undo purpose
+            final Entry deletedEntry = entries.get(viewHolder.getAdapterPosition());
+            final int deletedIndex = viewHolder.getAdapterPosition();
+
+            // remove the item from recycler view
+            adapter.removeEntry(viewHolder.getAdapterPosition());
+
+
+            /* showing snack bar with Undo option
+            Snackbar snackbar = Snackbar
+                    .make(coordinatorLayout, name + " removed from list!", Snackbar.LENGTH_LONG);
+            snackbar.setAction("UNDO", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    // undo is selected, restore the deleted item
+                    adapter.restoreEntry(deletedEntry, deletedIndex);
+                }
+            });
+            snackbar.setActionTextColor(Color.YELLOW);
+            snackbar.show(); */
+        }
     }
 
     private void onLoadRecordingsSuccess(@NonNull List<Recording> recordings) {

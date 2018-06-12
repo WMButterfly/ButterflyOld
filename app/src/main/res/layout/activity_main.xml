@@ -21,6 +21,7 @@
             android:padding="16dp" />
 
         <!--Place Fragments in here-->
+
         <FrameLayout
             android:id="@+id/fragment_frame_layout"
             android:layout_width="match_parent"
@@ -52,7 +53,8 @@
                 android:id="@+id/audio_fragment"
                 android:name="com.windowmirror.android.controller.fragment.AudioRecordFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                tools:layout="@layout/fragment_record" />
         </FrameLayout>
     </RelativeLayout>
 
@@ -88,6 +90,18 @@
             android:gravity="center_vertical"
             android:padding="16dp"
             android:text="@string/about" />
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/trashbin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackground"
+            android:drawablePadding="12dp"
+            android:drawableStart="@drawable/trash_can"
+            android:fontFamily="@font/lato_regular"
+            android:gravity="center_vertical"
+            android:padding="11dp"
+            android:text="@string/trash_bin" />
 
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/sign_out"

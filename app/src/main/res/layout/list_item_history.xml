@@ -1,66 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     tools:background="@android:color/white">
 
-    <LinearLayout
-        android:id="@+id/date_header"
+    <RelativeLayout
+        android:id="@+id/view_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_row_background">
+
+        <ImageView
+            android:id="@+id/delete_icon"
+            android:layout_width="@dimen/ic_delete"
+            android:layout_height="@dimen/ic_delete" 
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/padd_10"
+            android:src="@drawable/ic_delete_white_24dp"/>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/padd_10"
+            android:layout_toStartOf="@id/delete_icon"
+            android:text="@string/delete"
+            android:textColor="#fff"
+            android:textSize="13sp"/>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/view_foreground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:background="@android:color/white"
+        android:padding="@dimen/padd_10">
+
+        <LinearLayout
+            android:id="@+id/date_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/length"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/primary_color_dark_alpha_80"
+                android:textSize="12sp"
+                tools:text="2:23:26" />
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/primary_color_dark_alpha_80"
+                android:textSize="12sp"
+                tools:text="January 20, 2018" />
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/primary_color_dark_alpha_80"
+                android:textSize="12sp"
+                tools:text="8:48pm" />
+
+            <!-- temporarily remove play button until we can send the audio to the server to save
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/play"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_media_play" />
+             -->
+        </LinearLayout>
 
         <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/length"
-            android:layout_width="0dp"
+            android:id="@+id/transcription"
+            style="@style/TranscriptionText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_below="@id/date_header"
+            android:layout_marginTop="4dp"
             android:fontFamily="@font/lato_regular"
-            android:textColor="@color/primary_color_dark_alpha_80"
-            android:textSize="12sp"
-            tools:text="2:23:26" />
+            android:maxLines="6"
+            tools:text="The night watchmen overhear Borachio bragging about his crime. Dogberry and Verges, the heads of the local police, ultimately arrest both Borachio and Conrad, another of Don John’s followers. Leonato tells Claudio that, as punishment, he wants Claudio to tell everybody in the city how innocent Hero was. He also wants Claudio to marry Leonato’s “niece”—" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:fontFamily="@font/lato_regular"
-            android:textColor="@color/primary_color_dark_alpha_80"
-            android:textSize="12sp"
-            tools:text="January 20, 2018" />
+    </RelativeLayout>
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:fontFamily="@font/lato_regular"
-            android:textColor="@color/primary_color_dark_alpha_80"
-            android:textSize="12sp"
-            tools:text="8:48pm" />
-
-        <!-- temporarily remove play button until we can send the audio to the server to save
-        <android.support.v7.widget.AppCompatImageView
-            android:id="@+id/play"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_play" />
-         -->
-    </LinearLayout>
-
-    <android.support.v7.widget.AppCompatTextView
-        android:id="@+id/transcription"
-        style="@style/TranscriptionText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_below="@id/date_header"
-        android:fontFamily="@font/lato_regular"
-        android:maxLines="6"
-        tools:text="The night watchmen overhear Borachio bragging about his crime. Dogberry and Verges, the heads of the local police, ultimately arrest both Borachio and Conrad, another of Don John’s followers. Leonato tells Claudio that, as punishment, he wants Claudio to tell everybody in the city how innocent Hero was. He also wants Claudio to marry Leonato’s “niece”—" />
-</RelativeLayout>
+</FrameLayout>

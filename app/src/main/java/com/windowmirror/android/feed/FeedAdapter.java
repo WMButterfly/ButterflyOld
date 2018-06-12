@@ -1,5 +1,6 @@
 package com.windowmirror.android.feed;
 
+import android.content.Context;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -7,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.windowmirror.android.R;
@@ -26,6 +28,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     private static final int TEXT_MAX_LINES = 6;
     private Listener listener;
     private List<Entry> entries;
+    private Context context;
 
     public interface Listener {
         void onPausePlay(@NonNull Entry entry);
@@ -70,12 +73,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         }
     }
 
+    public void removeEntry(int position) {
+        entries.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreEntry(Entry entry, int position) {
+        entries.add(position, entry);
+        notifyItemInserted(position);
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         //private ImageView play;
         private TextView date;
         private TextView time;
         private TextView length;
         private TextView transcription;
+        public RelativeLayout viewBackground, viewForeground;
 
         ViewHolder(final View itemView) {
             super(itemView);
@@ -86,6 +100,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             time = itemView.findViewById(R.id.time);
             length = itemView.findViewById(R.id.length);
             transcription = itemView.findViewById(R.id.transcription);
+            viewBackground = itemView.findViewById(R.id.view_background);
+            viewForeground = itemView.findViewById(R.id.view_foreground);
         }
 
         void bind(@NonNull final Entry entry,
