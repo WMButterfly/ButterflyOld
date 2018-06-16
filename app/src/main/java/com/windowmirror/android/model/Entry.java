@@ -134,7 +134,7 @@ public class Entry implements Serializable {
         Recording built = new Recording.Builder()
                 .date(timestamp)
                 .transcript(getFullTranscription())
-//                .length(duration) // FIXME have server switch length/duration field to type long
+//              .length(duration) // FIXME have server switch length/duration field to type long
                 .build();
         Log.d("butterfly", "Built recording with transcript: " + built.getTranscript());
         return built;

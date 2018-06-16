@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.windowmirror.android.BuildConfig;
 import com.windowmirror.android.R;
 import com.windowmirror.android.auth.AuthActivity;
@@ -38,6 +39,7 @@ import com.windowmirror.android.listener.NavigationListener;
 import com.windowmirror.android.listener.RecordListener;
 import com.windowmirror.android.model.Entry;
 import com.windowmirror.android.model.OxfordStatus;
+import com.windowmirror.android.model.Transcription;
 import com.windowmirror.android.model.service.Recording;
 import com.windowmirror.android.service.BackendApiCallback;
 import com.windowmirror.android.service.BackendService;
@@ -48,10 +50,18 @@ import com.windowmirror.android.service.SpeechApiService;
 /* commented out to disable always listening
 import com.windowmirror.android.service.SphynxService;
 end disable */
+import com.windowmirror.android.util.FileUtility;
 import com.windowmirror.android.util.LocalPrefs;
 import com.windowmirror.android.util.NetworkUtility;
 import net.danlew.android.joda.JodaTimeAndroid;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+
 import view.navigation.ButterflyToolbar;
 import view.navigation.UserHeaderView;
 import com.google.android.gms.actions.NoteIntents;
@@ -80,6 +90,23 @@ public class MainActivity extends FragmentActivity implements
     private UserHeaderView userHeaderView;
     private View audioRecordContainer;
     private View progressSpinner;
+
+    //GoogleApiClient mClient;
+
+    public static void dumpIntent(Intent i){
+        if (i == null) {
+            return;
+        }
+        Bundle bundle = i.getExtras();
+        if (bundle == null) {
+            return;
+        }
+        for (String key : bundle.keySet()) {
+            Object value = bundle.get(key);
+            Log.d(TAG, String.format("%s %s (%s)", key,
+                    value.toString(), value.getClass().getName()));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,9 +143,17 @@ public class MainActivity extends FragmentActivity implements
         String type = intent.getType();
         if (intent != null) {
             Log.d ("butterfly", "started with intent. Action=" + action + " Type="+type + ".");
+            dumpIntent(intent);
             if (NoteIntents.ACTION_CREATE_NOTE.equals(action)) {
-                Log.d ("butterfly", "started with intent to record.");
-                showRecordingFragment(true);
+                Log.d ("butterfly", "started with intent to record!!");
+                String data = intent.getDataString();
+                Log.d("butterfly", "data: "+ data);
+                final Entry entry = this.createEntry(data);
+                //showRecordingFragment(true);
+                Log.d ("butterfly", "created entry.  entry.getFullTranscription():" + entry.getFullTranscription());
+
+                this.CreateEntry(entry);
+                //showRecordingFragment(true);
             }
         } else {
             Log.d ("butterfly", "started without intent.");
@@ -135,13 +170,39 @@ public class MainActivity extends FragmentActivity implements
         if (intent != null) {
             Log.d ("butterfly", "started with intent. Action=" + action + " Type="+type + ".");
             if (NoteIntents.ACTION_CREATE_NOTE.equals(action)) {
-                Log.d ("butterfly", "started with intent to record.");
-                showRecordingFragment(true);
+                Log.d ("butterfly", "started with intent to record!");
+                final Entry entry = this.createEntry("test entry!");
+                //showRecordingFragment(true);
+                Log.d ("butterfly", "created entry.  entry.getFullTranscription():" + entry.getFullTranscription());
             }
         } else {
             Log.d ("butterfly", "started without intent.");
         }
     }
+
+    //TODO:  Remove this copy paste uglyness!
+    private Entry createEntry(String fullTranscription) {
+        Log.d ("butterfly", "Creating Entry: "+ fullTranscription);
+        final Entry entry = new Entry();
+        final long now = System.currentTimeMillis();
+
+        entry.setTimestamp(now);
+        entry.setDuration(0);
+
+        this.WriteLine("fullTranscription: "+ fullTranscription);
+
+        entry.setFullTranscription(fullTranscription);
+        //if (getActivity() instanceof EntryActionListener) {
+        //    ((EntryActionListener) getActivity()).onEntryCreated(entry);
+        //}
+        return entry;
+    }
+
+    private void WriteLine(String text) {
+        Log.i("butterfly", text);
+        ////this._logText.append(text + "\n");
+    }
+
 
     private void setupNavigation() {
         toolbar = findViewById(R.id.toolbar);
@@ -290,7 +351,11 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public void onEntryCreated(final Entry entry) {
-        Log.d ("butterfly", "onEntryCreated.");
+        this.CreateEntry(entry);
+    }
+
+    public void CreateEntry(final Entry entry) {
+        Log.d ("butterfly", "EntryCreate.");
 
         FeedManager.getInstance(this).addEntry(entry);
         final Fragment fragment = getFragmentInView();

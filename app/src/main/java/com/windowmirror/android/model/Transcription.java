@@ -19,6 +19,8 @@ public class Transcription implements Serializable {
 
     private int oxfordTries; // Number of tries this entry has been sent to the Speech API (formally Project Oxford)
 
+    public Transcription() {}
+
     public Transcription(final String filePath) {
         this.filePath = filePath;
     }
