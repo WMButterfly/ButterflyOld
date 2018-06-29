@@ -32,4 +32,8 @@ public interface BackendApi {
 
     @DELETE("/recording/{uuid}/")
     Call<Response<Void>> deleteRecording(@NonNull @Path("uuid") String uuid);
+
+    // Trashbin API calls
+    @PATCH("/recording/{uuid}/")
+    Call<Recording> getDeleteRecording(@NonNull @Path("uuid") String uuid);
 }

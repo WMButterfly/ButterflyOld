@@ -63,8 +63,9 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':aars')
     implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:customtabs:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.0'
+    implementation 'com.android.support:design:27.1.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.google.guava:guava:24.0-android'
     implementation 'com.microsoft.projectoxford:speechrecognition:1.2.2'

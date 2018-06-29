@@ -30,6 +30,7 @@ import com.windowmirror.android.service.BackendService;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 import view.SpacesItemDecoration;
 import view.navigation.ButterflyToolbar;
@@ -128,33 +129,39 @@ public class FeedFragment extends Fragment implements FeedAdapter.Listener, Recy
                 });
     }
 
+    // Delete patch request
+    public void deleteRequestPatch(String name, final Recording recording) {
+        showProgress(true);
+        BackendService
+                .getInstance()
+                .getApi()
+                .updateRecording(name, recording)
+                .enqueue(new Callback<Recording>() {
+                    @Override
+                    public void onResponse(Call<Recording> call, Response<Recording> response) {
+                        showProgress(false);
+                        recording.setRecycle(false);
+                        Log.e(TAG, "Delete patch request successful");
+                    }
+
+                    @Override
+                    public void onFailure(Call<Recording> call, Throwable t) {
+                        showProgress(false);
+                        Log.e(TAG, "Delete patch request failed");
+                    }
+                });
+
+    }
 
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
         if (viewHolder instanceof FeedAdapter.ViewHolder) {
             // get the removed item name to display it in snack bar
             final String name = entries.get(viewHolder.getAdapterPosition()).getUuid();
-
-            // backup of removed item for undo purpose
-            final Entry deletedEntry = entries.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
-
+            final Recording recording = entries.get(viewHolder.getAdapterPosition()).getRecording();
             // remove the item from recycler view
+            deleteRequestPatch(name, recording);
             adapter.removeEntry(viewHolder.getAdapterPosition());
 
-
-            /* showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, name + " removed from list!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    // undo is selected, restore the deleted item
-                    adapter.restoreEntry(deletedEntry, deletedIndex);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show(); */
         }
     }
 

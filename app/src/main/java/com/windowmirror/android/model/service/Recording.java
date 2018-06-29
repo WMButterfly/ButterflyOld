@@ -26,6 +26,9 @@ public final class Recording implements Serializable {
     @SerializedName("Length")
     private String length;
 
+    @SerializedName("Recycle")
+    private boolean recycle;
+
     public String getUuid() {
         return uuid;
     }
@@ -61,11 +64,14 @@ public final class Recording implements Serializable {
         this.transcript = transcription;
     }
 
+    public void setRecycle(boolean recycle) { this.recycle = recycle; }
+
     public static class Builder {
         private String name;
         private String transcript;
         private String length;
         private String date;
+        private boolean recycle;
 
         public Builder name(String name) {
             this.name = name;
@@ -87,12 +93,18 @@ public final class Recording implements Serializable {
             return this;
         }
 
+        public Builder recycle(boolean recycle) {
+            this.recycle = recycle;
+            return this;
+        }
+
         public Recording build() {
             Recording recording = new Recording();
             recording.name = name;
             recording.length = length;
             recording.date = date;
             recording.transcript = transcript;
+            recording.recycle = recycle;
             return recording;
         }
     }
